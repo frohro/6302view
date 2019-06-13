@@ -20,7 +20,9 @@
 #define MAX_IN_LEN 28 /* (id)(:)(float)(\n) = 2+1+24+1 = 28 */
 #define MAX_OUT_LEN (1+4*MAX_REPORTERS+1)
 
-#define MAX_BUILD_STRING_LEN 2000
+#define MAX_BUILD_STRING_LEN (MAX_CONTROLS*(8+MAX_TITLE_LENGTH+3*24+5))
+// 2340, last time I checked
+// Worst case is when we have 20 slider controls with long titles
 
 // Communication system setups
 #define S302_SERIAL       0
