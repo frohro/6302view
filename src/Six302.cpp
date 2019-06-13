@@ -27,26 +27,38 @@ bool CommManager::connect(char* ssid, char* pw) {
 /* Controls */
 
 bool CommManager::addToggle(bool* linker, char* title) {
-   if( _total_controls + 1 > MAX_CONTROLS )
+   if( _total_controls + 1 > MAX_CONTROLS
+   ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
    _controls[_total_controls++] = (float*)linker;
-   strcat(_build_string, "T");
+   char temp[4+MAX_TITLE_LENGTH];
+   sprintf(temp, "T\r%s\r", title);
+   strcat(_build_string, temp);
    return true;
 }
 
 bool CommManager::addButton(bool* linker, char* title) {
-   if( _total_controls + 1 > MAX_CONTROLS )
+   if( _total_controls + 1 > MAX_CONTROLS
+   ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
    _controls[_total_controls++] = (float*)linker;
+   char temp[4+MAX_TITLE_LENGTH];
+   sprintf(temp, "B\r%s\r", title);
+   strcat(_build_string, temp);
    return true;
 }
 
 bool CommManager::addSlider(float* linker, char* title,
                             std::initializer_list<float> range,
                             float resolution, bool toggle=false) {
-   if( _total_controls + 1 > MAX_CONTROLS )
+   if( _total_controls + 1 > MAX_CONTROLS
+   ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
    _controls[_total_controls++] = linker;
+   char temp[8+MAX_TITLE_LENGTH+3*24+5];
+   sprintf(temp, "S\r%s\r%d\r%d\r%d\r%s\r",
+      title, range[0], range[1], resolution, toggle? "True":"False");
+   strcat(_build_string, temp);
    return true;
 }
 
@@ -55,19 +67,52 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
                               std::initializer_list<float> xrange,
                               std::initializer_list<float> yrange,
                               float resolution, bool sticky=true) {
-   if( _total_controls + 2 > MAX_CONTROLS )
+   if( _total_controls + 2 > MAX_CONTROLS
+   ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
    _controls[_total_controls++] = linker_x;
    _controls[_total_controls++] = linker_y;
+   char temp[10+MAX_TITLE_LENGTH+5*24+5];
+   sprintf(temp, "J\r%s\r%d\r%d\r%d\r%d\r%d\r%s\r",
+      title, xrange[0], xrange[1],
+             yrange[0], yrange[1], resolution, sticky? "True":"False");
+   strcat(_build_string, temp);
    return true;
 }
 
 bool CommManager::addPlot(float* linker, char* title,
                           std::initializer_list<float> yrange,
                           int steps_displayed=10, int num_plots=1) {
-   if( _total_reporters >= MAX_REPORTERS )
+   if( _total_reporters >= MAX_REPORTERS
+   ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
    _reporters[_total_reporters++] = linker;
+   char temp[8+MAX_TITLE_LENGTH+4*24];
+   sprintf(temp, "P\r%s\r%d\r%d\r%d\r%d\r",
+      title, yrange[0], yrange[1], steps_displayed, num_plots);
+   strcat(_build_string, temp);
+   return true;
+}
+
+bool CommManager::addNumber(float* linker, char* title) {
+   if( _total_reporters >= MAX_REPORTERS
+   ||  strlen(title) > MAX_TITLE_LENGTH )
+      return false;
+   _reporters[_total_reporters++] = linker;
+   char temp[10+MAX_TITLE_LENGTH];
+   sprintf(temp, "N\r%s\rfloat\r", title);
+   strcat(_build_string, temp);
+   return true;
+}
+
+bool CommManager::addNumber(int32_t* linker, char* title) {
+   if( _total_reporters >= MAX_REPORTERS
+   ||  strlen(title) > MAX_TITLE_LENGTH )
+      return false;
+   _reporters[_total_reporters++] = (float*)linker;
+   char temp[10+MAX_TITLE_LENGTH];
+   sprintf(temp, "N\r%s\rint\r", title);
+   strcat(_build_string, temp);
    return true;
 }
 
