@@ -13,8 +13,8 @@ float input, output;
 
 void setup() {
    // Add modules
-   cm.addSlider(&input, "Input", {-5, 5}, 0.01);
-   cm.addPlot(&output, "Output", {-1, 30});
+   cm.addSlider(&input, "Input", -5, 5, 0.01);
+   cm.addPlot(&output, "Output", -1, 30);
    // Connect via serial
    cm.connect(&Serial, 115200);
 }
@@ -24,6 +24,22 @@ void loop() {
    cm.step();
 }
 ```
+
+This creates one control (a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 to 0 to 25.
+
+## Modules
+
+### Controls
+
+* Add a toggle module with `addToggle`
+* Add a button module with `addButton`
+* Add a slider module with `addSlider`
+* Add a joystick module with `addJoystick`
+
+### Reporters
+
+* Add a plot module with `addPlot`
+* Add a plain number module with `addNumber`
 
 ## How the information is communicated
 
@@ -43,9 +59,9 @@ There are three types of signals sent from the microcontroller:
 
 #### How build instructions are sent
 
-The build instructions' syntax is the character `B`, followed by the list of modules, and terminated with `\n`.
+The build instructions' syntax is the character `B`, followed by the list of modules, and terminated with '\n'.
 
-Each module starts with a letter to signify the module, follows with the name, and then the remaining arguments as they are defined in the method.
+Each module starts with a letter to signify the module, follows with the name, and then with the remaining arguments as they are defined in the method.
 * `T` for Toggle
 * `B` for Button
 * `S` for Slider
@@ -55,9 +71,15 @@ Each module starts with a letter to signify the module, follows with the name, a
 
 Each module, as well as the arguments of each module, are separated by `\r`.
 
+For example, the build string for the quick example above (which adds a slider and a plot) is:
+
+```plaintext
+S\rInput\r-5.000000\r5.000000\r0.100000\rFalse\rP\rOutput\r-1.000000\r30.000000\r10\r1\r\n
+```
+
 #### How the data are reported
 
-Report messages are the character `R` (ASCII 82) followed by packs of 4 bytes, where each pack represent the `float` value. The bytes are sent in the order they were added, which is also the same order as they appear in the build string. So, each report is `1 + 4 * (total reporters)` bytes in length.
+Report messages are the character `R` (ASCII 82) followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value. The bytes are sent in the order they were added, which is also the same order as they appear in the build string. So, each report is `1 + 4 * (total reporters)` bytes in length.
 
 <!-- Issue with missed bits? -->
 
