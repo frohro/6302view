@@ -1,32 +1,35 @@
 #include "Six302.h"
 
-CommManager::CommManager(uint32_t sp=1000, uint32_t rp=20000) {
+CommManager::CommManager(uint32_t sp, uint32_t rp) {
    _step_period = sp;
    _report_period = rp;
    _total_controls = 0;
    _total_reporters = 0;
 }
 
-bool CommManager::connect(usb_serial_class* s, uint32_t baud) {
+#if defined TEENSYDUINO
+   void CommManager::connect(usb_serial_class* s, uint32_t baud)
+#else
+   void CommManager::connect(HardwareSerial* s, uint32_t baud)
+#endif
+{
    _architecture = S302_SERIAL;
    _serial = s;
    _baud = baud;
    _serial->begin(baud);
    while(!_serial);
-   strcpy(_build_string, "test"); // DEBUG
-   _build();
-   return true;
+   while( _serial->available() )
+      _serial->read();
 }
 
-bool CommManager::connect(char* ssid, char* pw) {
+void CommManager::connect(char* ssid, char* pw) {
    _architecture = S302_WEBSOCKETS;
    _NOT_IMPLEMENTED_YET();
-   return false;
 }
 
 /* Controls */
 
-bool CommManager::addToggle(bool* linker, char* title) {
+bool CommManager::addToggle(bool* linker, const char* title) {
    if( _total_controls + 1 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
@@ -37,7 +40,7 @@ bool CommManager::addToggle(bool* linker, char* title) {
    return true;
 }
 
-bool CommManager::addButton(bool* linker, char* title) {
+bool CommManager::addButton(bool* linker, const char* title) {
    if( _total_controls + 1 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
@@ -48,53 +51,56 @@ bool CommManager::addButton(bool* linker, char* title) {
    return true;
 }
 
-bool CommManager::addSlider(float* linker, char* title,
-                            std::initializer_list<float> range,
-                            float resolution, bool toggle=false) {
+bool CommManager::addSlider(float* linker, const char* title,
+                            float range_low, float range_high,
+                            float resolution, bool toggle) {
    if( _total_controls + 1 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
    _controls[_total_controls++] = linker;
    char temp[8+MAX_TITLE_LENGTH+3*24+5];
-   sprintf(temp, "S\r%s\r%d\r%d\r%d\r%s\r",
-      title, range[0], range[1], resolution, toggle? "True":"False");
+   sprintf(temp, "S\r%s\r%f\r%f\r%f\r%s\r",
+      title, range_low, range_high,
+      resolution, toggle? "True":"False");
    strcat(_build_string, temp);
    return true;
 }
 
 bool CommManager::addJoystick(float* linker_x, float* linker_y,
-                              char* title,
-                              std::initializer_list<float> xrange,
-                              std::initializer_list<float> yrange,
-                              float resolution, bool sticky=true) {
+                              const char* title,
+                              float xrange_low, float xrange_high,
+                              float yrange_low, float yrange_high,
+                              float resolution, bool sticky) {
    if( _total_controls + 2 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
    _controls[_total_controls++] = linker_x;
    _controls[_total_controls++] = linker_y;
    char temp[10+MAX_TITLE_LENGTH+5*24+5];
-   sprintf(temp, "J\r%s\r%d\r%d\r%d\r%d\r%d\r%s\r",
-      title, xrange[0], xrange[1],
-             yrange[0], yrange[1], resolution, sticky? "True":"False");
+   sprintf(temp, "J\r%s\r%f\r%f\r%f\r%f\r%f\r%s\r",
+      title, xrange_low, xrange_high,
+             yrange_low, yrange_high,
+             resolution, sticky? "True":"False");
    strcat(_build_string, temp);
    return true;
 }
 
-bool CommManager::addPlot(float* linker, char* title,
-                          std::initializer_list<float> yrange,
-                          int steps_displayed=10, int num_plots=1) {
+bool CommManager::addPlot(float* linker, const char* title,
+                          float yrange_low, float yrange_high,
+                          int steps_displayed, int num_plots) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
    _reporters[_total_reporters++] = linker;
    char temp[8+MAX_TITLE_LENGTH+4*24];
-   sprintf(temp, "P\r%s\r%d\r%d\r%d\r%d\r",
-      title, yrange[0], yrange[1], steps_displayed, num_plots);
+   sprintf(temp, "P\r%s\r%f\r%f\r%d\r%d\r",
+      title, yrange_low, yrange_high,
+      steps_displayed, num_plots);
    strcat(_build_string, temp);
    return true;
 }
 
-bool CommManager::addNumber(float* linker, char* title) {
+bool CommManager::addNumber(float* linker, const char* title) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
@@ -105,7 +111,7 @@ bool CommManager::addNumber(float* linker, char* title) {
    return true;
 }
 
-bool CommManager::addNumber(int32_t* linker, char* title) {
+bool CommManager::addNumber(int32_t* linker, const char* title) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LENGTH )
       return false;
@@ -116,40 +122,30 @@ bool CommManager::addNumber(int32_t* linker, char* title) {
    return true;
 }
 
-/* Build */
-
-bool CommManager::_build() {
-   switch( _architecture ) {
-      case S302_SERIAL: {
-         while(_serial->available())
-            _serial->read();
-         _serial->print('B');
-         _serial->print(_build_string);
-         _serial->write(0);
-         while(!_serial->available());
-         if( (char)_serial->read() == '\n' ) {
-            _connected = true; // yay
-            return true;
-         } else { return false; }
-      } break;
-      case S302_WEBSOCKETS: {
-         _NOT_IMPLEMENTED_YET();
-         return false;
-      } break;
-   }
-}
-
 /* The mitochondria */
 
-bool CommManager::step() {
-   _control(); // get info from GUI
-   _report();  // send info to GUI
-   _wait();    // loop control
-   return true; // may return headroom in the future
+void CommManager::step() {
+   switch( _state ) {
+      case S302_DISCONNECTED: {
+         _wait_for_connection();
+      } break;
+      case S302_TALK: { // send info to GUI
+         if( _total_reporters
+         &&  _time_to_talk() )
+            _report();
+         _control();
+      } break;
+   }
+   _wait(); // loop control
+}
+
+uint32_t CommManager::headroom() {
+   return _headroom;
 }
 
 void CommManager::_control() {
    // read incoming message
+   strcpy(_incoming, "");
    switch( _architecture ) {
       case S302_SERIAL: {
          if( !_serial->available() )
@@ -168,7 +164,7 @@ void CommManager::_control() {
    // parse the message
    int id = atoi(strtok(_incoming, ":"));
    if( id < 0 ) { // disconnect!
-      _connected = false;
+      _state = S302_DISCONNECTED;
       return;
    }
    // update the value
@@ -187,7 +183,6 @@ void CommManager::_control() {
 // Pack the important data as bytes
 // And send 'em off
 void CommManager::_report() {
-   if( !_total_reporters ) return;
    // Pack up the data
    for( uint8_t i = 0; i < _total_reporters; i++ ) {
       // I'm making the assumption that all reports are floats
@@ -199,7 +194,8 @@ void CommManager::_report() {
       case S302_SERIAL: {
 
          _serial->print('R');
-         _serial->write(_outgoing, 4*_total_reporters);
+         _serial->write(
+            (uint8_t*)_outgoing, 4 * _total_reporters);
 
       } break;
       case S302_WEBSOCKETS: {
@@ -208,15 +204,54 @@ void CommManager::_report() {
    }
 }
 
-uint32_t CommManager::_wait() {
+void CommManager::_wait_for_connection() {
+   switch( _architecture ) {
+      case S302_SERIAL: {
+         if( (char)_serial->read() == '\n' )
+            _state = S302_TALK; // yay
+                                 // we're connected
+         else if( _time_to_talk() )
+            _serial->println(_build_string);
+      } break;
+      case S302_WEBSOCKETS: {
+         _NOT_IMPLEMENTED_YET();
+      } break;
+   }
+}
+
+// Whether or not enough time has passed to report again.
+// Controls how often the build string is sent and how often data
+// is reported.
+bool CommManager::_time_to_talk() {
+   // depends on the microcontroller
+   #if defined TEENSYDUINO
+      if( _report_period <= _report_timer ) {
+         _report_timer = 0;
+         return true;
+      }
+   #elif defined (ESP32) || (ESP8266)
+      if( _report_period <= (micros() - _report_timer) ) {
+         _report_timer = micros();
+         return true;
+      }
+   #else // I'm assuming it's an Arduino Uno
+      _NOT_IMPLEMENTED_YET();
+   #endif
+   return false;
+}
+
+void CommManager::_wait() {
    // How we wait depends on the microcontroller
    #if defined TEENSYDUINO
-      while(_step_period > _timer);
-      _timer = 0;
-   #elif defined ESP32
-      _NOT_IMPLEMENTED_YET();
-   #elif defined ESP8266
-      _NOT_IMPLEMENTED_YET();
+      uint32_t temp = _main_timer;
+      while(_step_period > _main_timer);
+      _headroom = _main_timer - temp;
+      _main_timer = 0;
+   #elif defined (ESP32) || (ESP8266)
+      _headroom = _step_period - (micros() - _main_timer);
+      if( _headroom > 0 )
+         delayMicroseconds(_headroom);
+      _main_timer = micros();
    #else // I'm assuming it's an Arduino Uno
       _NOT_IMPLEMENTED_YET();
    #endif
@@ -224,7 +259,7 @@ uint32_t CommManager::_wait() {
 
 /* Else */
 
-void CommManager::debug(const char* line) {
+void CommManager::debug(char* line) {
    _serial->print('D');
    _serial->print(line);
    _serial->write(0);
@@ -236,5 +271,4 @@ void CommManager::_NOT_IMPLEMENTED_YET() {
    // Let me clean the living room
    // Then you can come back
 
-   delay(666000);
 }
