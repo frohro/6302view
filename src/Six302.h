@@ -5,11 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Arbitrary limits */
+/* Arbitrary limits
+   Eventually these might dynamically change according to the MC */
 
 // How many elements you can add
 // Joystick counts as two controls
-#define MAX_CONTROLS      10
+#define MAX_CONTROLS      20
 #define MAX_REPORTERS     10
 
 // Max length of titles of controls & reporters
@@ -59,15 +60,15 @@ class CommManager {
       bool addSlider(
          float* linker,
          const char* title,
-         float range_low, float range_high,
+         std::initializer_list<float> range,
          float resolution,
          bool toggle=false);
       bool addJoystick(
          float* linker_x,
          float* linker_y,
          const char* title,
-         float xrange_low, float xrange_high,
-         float yrange_low, float yrange_high,
+         std::initializer_list<float> xrange,
+         std::initializer_list<float> yrange,
          float resolution,
          bool sticky=true);
 
@@ -75,7 +76,7 @@ class CommManager {
       bool addPlot(
          float* linker,
          const char* title,
-         float yrange_low, float yrange_high,
+         std::initializer_list<float> yrange,
          int steps_displayed=10,
          int num_plots=1);
       bool addNumber(int32_t* linker, const char* title);

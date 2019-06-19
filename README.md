@@ -21,8 +21,8 @@ float output;
 
 void setup() {
    /* Add modules */
-   cm.addSlider(&input, "Input", -5, 5, 0.1);
-   cm.addPlot(&output, "Output", -1, 30);
+   cm.addSlider(&input, "Input", {-5, 5}, 0.1);
+   cm.addPlot(&output, "Output", {-1, 30});
 
    /* Ready to communicate over serial */
    cm.connect(&Serial, 115200);
@@ -34,17 +34,21 @@ void loop() {
 }
 ```
 
-## Goals
+## Desired goals
 
 * To be elegant -- just include the library, no need to modify anything.
 * To support the following microcontrollers:
    * Teensy
    * ESP32
    * ESP8266
-   * Arduino Uno
 * To support the following communication methods:
    * Over port (pass in your `Serial` and BAUD rate)
    * Websockets (pass in SSID and p/w)
-* And potentially to support the following communication methods:
+
+## Backburner
+
+* Potentially to support the following microcontrollers:
+   * Arduino Uno
+* Potentially to support the following communication methods:
    * MQTT instead of websockets
    * Bluetooth

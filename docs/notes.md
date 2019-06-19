@@ -13,8 +13,8 @@ float input, output;
 
 void setup() {
    // Add modules
-   cm.addSlider(&input, "Input", -5, 5, 0.01);
-   cm.addPlot(&output, "Output", -1, 30);
+   cm.addSlider(&input, "Input", {-5, 5}, 0.01);
+   cm.addPlot(&output, "Output", {-1, 30});
    // Connect via serial
    cm.connect(&Serial, 115200);
 }
@@ -76,6 +76,8 @@ For example, the build string for the quick example above (which adds a slider a
 ```plaintext
 S\rInput\r-5.000000\r5.000000\r0.100000\rFalse\rP\rOutput\r-1.000000\r30.000000\r10\r1\r\n
 ```
+
+Sadly, the carriage return is not rendered as a new line in the serial monitor (Arduino IDE 1.8.9 on Windows 10).
 
 #### How the data are reported
 

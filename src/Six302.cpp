@@ -52,7 +52,7 @@ bool CommManager::addButton(bool* linker, const char* title) {
 }
 
 bool CommManager::addSlider(float* linker, const char* title,
-                            float range_low, float range_high,
+                            std::initializer_list<float> range,
                             float resolution, bool toggle) {
    if( _total_controls + 1 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LENGTH )
@@ -60,7 +60,7 @@ bool CommManager::addSlider(float* linker, const char* title,
    _controls[_total_controls++] = linker;
    char temp[8+MAX_TITLE_LENGTH+3*24+5];
    sprintf(temp, "S\r%s\r%f\r%f\r%f\r%s\r",
-      title, range_low, range_high,
+      title, *range.begin(), *(range.begin()+1),
       resolution, toggle? "True":"False");
    strcat(_build_string, temp);
    return true;
@@ -68,8 +68,8 @@ bool CommManager::addSlider(float* linker, const char* title,
 
 bool CommManager::addJoystick(float* linker_x, float* linker_y,
                               const char* title,
-                              float xrange_low, float xrange_high,
-                              float yrange_low, float yrange_high,
+                              std::initializer_list<float> xrange,
+                              std::initializer_list<float> yrange,
                               float resolution, bool sticky) {
    if( _total_controls + 2 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LENGTH )
@@ -78,15 +78,15 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
    _controls[_total_controls++] = linker_y;
    char temp[10+MAX_TITLE_LENGTH+5*24+5];
    sprintf(temp, "J\r%s\r%f\r%f\r%f\r%f\r%f\r%s\r",
-      title, xrange_low, xrange_high,
-             yrange_low, yrange_high,
+      title, *xrange.begin(), *(xrange.begin()+1),
+             *yrange.begin(), *(yrange.begin()+1),
              resolution, sticky? "True":"False");
    strcat(_build_string, temp);
    return true;
 }
 
 bool CommManager::addPlot(float* linker, const char* title,
-                          float yrange_low, float yrange_high,
+                          std::initializer_list<float> yrange,
                           int steps_displayed, int num_plots) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LENGTH )
@@ -94,7 +94,7 @@ bool CommManager::addPlot(float* linker, const char* title,
    _reporters[_total_reporters++] = linker;
    char temp[8+MAX_TITLE_LENGTH+4*24];
    sprintf(temp, "P\r%s\r%f\r%f\r%d\r%d\r",
-      title, yrange_low, yrange_high,
+      title, *yrange.begin(), *(yrange.begin()+1),
       steps_displayed, num_plots);
    strcat(_build_string, temp);
    return true;
