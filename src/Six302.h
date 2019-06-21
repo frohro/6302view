@@ -1,6 +1,8 @@
 #ifndef _Six302_H_
 #define _Six302_H_
 
+#define S302_SERIAL
+
 #include <Arduino.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,31 +26,29 @@
 // 2340, last time I checked
 // Worst case is when we have 20 slider controls with long titles
 
-// Communication system setups
-#define S302_SERIAL       0
-#define S302_WEBSOCKETS   1
-
 // States
-#define IDLE 0
 #define S302_DISCONNECTED 0
 #define S302_LISTEN       1
 #define S302_TALK         2
 
+// How long to wait (in microseconds) before re-sending the buildstring
+#define S302_WAIT_FOR_CONNECT 5000000
+
 class CommManager {
    public:
-      // Main things
-      CommManager(uint32_t sp=1000, uint32_t rp=20000);
 
-      /* Serial */
-      #if defined TEENSYDUINO
-         void connect(usb_serial_class* s, uint32_t baud);
-      #else
-         void connect(HardwareSerial* s, uint32_t baud);
+      // Initialization
+      CommManager(uint32_t sp=1000, uint32_t rp=20000);
+      
+      #if defined S302_SERIAL
+         #if defined TEENSYDUINO
+            void connect(usb_serial_class* s, uint32_t baud);
+         #else
+            void connect(HardwareSerial* s, uint32_t baud);
+         #endif
+      #elif defined S302_WEBSOCKETS
+         void connect(char* ssid, char* pw);
       #endif
-      /* Pure wifi */
-      void connect(char* ssid, char* pw);
-      void step();
-      uint32_t headroom();
 
       // Add controls:
       bool addToggle(
@@ -82,7 +82,13 @@ class CommManager {
       bool addNumber(int32_t* linker, const char* title);
       bool addNumber(float* linker, const char* title);
 
-      // Send debugging info
+      // Tick
+      void step();
+
+      // Other
+      
+      uint32_t headroom();
+      
       void debug(char*);
       //void debug(String);
       //void debug(bool);
@@ -91,52 +97,47 @@ class CommManager {
       //void debug(double);
 
    protected:
-      void _control();
-      void _report();
-      void _wait_for_connection();
-      bool _time_to_talk();
-      void _wait();
+      // Most important variables
+      char _build_string[MAX_BUILD_STRING_LEN];
+      char _buf[MAX_OUT_LEN];
+      char _tmp[10+MAX_TITLE_LENGTH+5*24+5];
+      
+      #if defined S302_SERIAL
+         #if defined TEENSYDUINO
+            usb_serial_class* _serial;
+         #else
+            HardwareSerial* _serial;
+         #endif
+         uint32_t _baud;
+      #elif defined S302_WEBSOCKETS
+         // nothing here yet
+      #endif
+      
+      uint8_t _state;
+      
+      float* _controls[MAX_CONTROLS];   uint8_t _total_controls;
+      float* _reporters[MAX_REPORTERS]; uint8_t _total_reporters;
 
-      int32_t _headroom;
-
-      uint8_t _architecture;
-
+      // Timing variables
       uint32_t _step_period;
       uint32_t _report_period;
-
-      float* _controls[MAX_CONTROLS];
-      float* _reporters[MAX_REPORTERS];
-      uint8_t _total_controls;
-      uint8_t _total_reporters;
-
-      char _build_string[MAX_BUILD_STRING_LEN];
-
-      char _incoming[MAX_IN_LEN];
-      char _outgoing[MAX_OUT_LEN];
-
-      uint8_t _state;
-
-      // Serial
-      #if defined TEENSYDUINO
-         usb_serial_class* _serial;
-      #else
-         HardwareSerial* _serial;
-      #endif
-      uint32_t _baud;
-      
-      // Websockets
-      void _NOT_IMPLEMENTED_YET();
-
-      // Variables for timing
+      int32_t _headroom;
       #if defined TEENSYDUINO
          elapsedMicros _main_timer;
          elapsedMicros _report_timer;
       #elif defined (ESP32) || (ESP8266)
          uint64_t _main_timer;
          uint64_t _report_timer;
-      #else // I'm assuming it's an Arduino Uno
       #endif
       
+      // Routines
+      void _control();
+      void _report();
+      void _wait_for_connection();
+      bool _time_to_talk(uint32_t time_to_wait);
+      void _wait();
+      
+      void _NOT_IMPLEMENTED_YET();
 };
 
 #endif
