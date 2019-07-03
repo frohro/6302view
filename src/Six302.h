@@ -138,6 +138,12 @@ class CommManager {
       void _wait();
       
       void _NOT_IMPLEMENTED_YET();
+
+      // ESP32 dual core
+      #if defined ESP32
+         TaskHandle_t _six302_task;
+         static void _step_forever(void* params);
+      #endif
 };
 
 #endif

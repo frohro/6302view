@@ -18,12 +18,22 @@ CommManager::CommManager(uint32_t sp, uint32_t rp) {
       while(!_serial);
       while( _serial->available() )
          _serial->read();
-   }
 #elif defined S302_WEBSOCKETS
    void CommManager::connect(char* ssid, char* pw) {
       _NOT_IMPLEMENTED_YET();
-   }
 #endif
+#if defined ESP32
+   disableCore0WDT();
+   xTaskCreatePinnedToCore(
+      this->_step_forever,
+      "6302view",
+      10000, /* Stack size, in words */
+      this,
+      0,
+      &_six302_task,
+      0);
+#endif
+}
 
 /* Controls */
 
@@ -129,6 +139,14 @@ void CommManager::step() {
    }
    _wait(); // loop control
 }
+
+#if defined ESP32
+   void CommManager::_step_forever(void* param) {
+      CommManager *parent = static_cast<CommManager*>(param);
+      for(;;)
+         parent->step();
+   }
+#endif
 
 uint32_t CommManager::headroom() {
    return _headroom;
