@@ -2,7 +2,84 @@
 
 Diagrams to be added. This page to be prettified.
 
-## Quick example
+## Set-up
+
+Start off including the library and creating an instance of the `CommManager` class.
+
+```cpp
+#include <Six302.h>
+
+CommManager cm(1000, 5000);
+```
+
+The numbers control the rate at which the system works. `1000` is the time in microseconds between loops (step period), and `5000` is the time in microseconds between each *report* (report period).
+
+There are, so far, two modes of communication between the GUI and the microcontroller. Data can be communicated over **Serial**, or by **WebSockets**.
+
+### Serial
+
+Choose `#define S302_SERIAL` at the top of `Six302.h` for this mode. To connect, enter a Serial pointer and BAUD rate:
+
+```cpp
+cm.connect(&Serial, 115200);
+```
+
+### WebSockets
+
+Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode. To connect, enter your SSID and p/w:
+
+```cpp
+cm.connect("Mom use this one", "password");
+```
+
+The Serial monitor will display the local IP address of your microcontroller that is used in the GUI. Something like:
+
+```plaintext
+Connecting to Mom use this one WiFi .. connected!
+--> 10.0.0.18 <--
+```
+
+### Adding modules
+
+To add controls and reporters, use the following `CommMannger` routines.
+
+#### Controls
+
+* Add a toggle module with `addToggle`
+* Add a button module with `addButton`
+* Add a slider module with `addSlider`
+* Add a joystick module with `addJoystick`
+
+#### Reporters
+
+* Add a plot module with `addPlot`
+* Add a plain number module with `addNumber`
+
+Check the header file for what arguments these take. In general, it's `pointer`, `title`, followed by other, potentially optional args.
+
+### `cm.step`
+
+```cpp
+void loop() {
+   /* do stuff */
+   cm.step();
+}
+```
+
+`cm.step` updates the inputs and reports the outputs and conveniently blocks according to your given loop rate (e.g. the 1000 us above).
+
+**Note**: On the ESP32, `cm.step` runs on the second core and so does not need to be ran in the main loop as it does for the other microcontrollers.
+
+## For example
+
+On the **Teensy** over **Serial**, at the head of `Six302.h`, you would have
+
+```cpp
+#define S302_SERIAL
+//#define S302_WEBSOCKETS
+```
+
+and in your `.ino`, you may have:
 
 ```cpp
 #include <Six302.h>
@@ -27,21 +104,7 @@ void loop() {
 
 This creates one control (a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 to 0 to 25.
 
-## Modules
-
-### Controls
-
-* Add a toggle module with `addToggle`
-* Add a button module with `addButton`
-* Add a slider module with `addSlider`
-* Add a joystick module with `addJoystick`
-
-### Reporters
-
-* Add a plot module with `addPlot`
-* Add a plain number module with `addNumber`
-
-## How the information is communicated
+## How the information is communicated (the details)
 
 ### GUI → Microcontroller
 

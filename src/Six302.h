@@ -1,11 +1,24 @@
 #ifndef _Six302_H_
 #define _Six302_H_
 
-#define S302_SERIAL
+/* Only have one of these uncommented! */
+
+//#define S302_SERIAL
+#define S302_WEBSOCKETS
+
+#if defined (S302_WEBSOCKETS) && !defined (ESP32) && !defined (ESP8266)
+#error "Communication over WebSocket is only available for the ESP32 or ESP8266."
+#endif
 
 #include <Arduino.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if defined S302_WEBSOCKETS
+#include <WiFi.h>
+#include <WebSocketsServer.h>
+using namespace std::placeholders;
+#endif
 
 /* Arbitrary limits
    Eventually these might dynamically change according to the MC */
@@ -40,15 +53,15 @@ class CommManager {
       // Initialization
       CommManager(uint32_t sp=1000, uint32_t rp=20000);
       
-      #if defined S302_SERIAL
-         #if defined TEENSYDUINO
-            void connect(usb_serial_class* s, uint32_t baud);
-         #else
-            void connect(HardwareSerial* s, uint32_t baud);
-         #endif
-      #elif defined S302_WEBSOCKETS
-         void connect(char* ssid, char* pw);
-      #endif
+#if defined S302_SERIAL
+#if defined TEENSYDUINO
+      void connect(usb_serial_class* s, uint32_t baud);
+#else
+      void connect(HardwareSerial* s, uint32_t baud);
+#endif
+#elif defined S302_WEBSOCKETS
+      void connect(char* ssid, char* pw);
+#endif
 
       // Add controls:
       bool addToggle(
@@ -102,16 +115,21 @@ class CommManager {
       char _buf[MAX_OUT_LEN];
       char _tmp[10+MAX_TITLE_LENGTH+5*24+5];
       
-      #if defined S302_SERIAL
-         #if defined TEENSYDUINO
-            usb_serial_class* _serial;
-         #else
-            HardwareSerial* _serial;
-         #endif
-         uint32_t _baud;
-      #elif defined S302_WEBSOCKETS
-         // nothing here yet
-      #endif
+#if defined S302_SERIAL
+#if defined TEENSYDUINO
+      usb_serial_class* _serial;
+#else
+      HardwareSerial* _serial;
+#endif
+      uint32_t _baud;
+#elif defined S302_WEBSOCKETS
+      WebSocketsServer _wss = WebSocketsServer(80);
+      void _on_websocket_event(
+         uint8_t num,
+         WStype_t type,
+         uint8_t* payload,
+         size_t length);
+#endif
       
       uint8_t _state;
       
@@ -122,13 +140,13 @@ class CommManager {
       uint32_t _step_period;
       uint32_t _report_period;
       int32_t _headroom;
-      #if defined TEENSYDUINO
-         elapsedMicros _main_timer;
-         elapsedMicros _report_timer;
-      #elif defined (ESP32) || (ESP8266)
-         uint64_t _main_timer;
-         uint64_t _report_timer;
-      #endif
+#if defined TEENSYDUINO
+      elapsedMicros _main_timer;
+      elapsedMicros _report_timer;
+#elif defined (ESP32) || (ESP8266)
+      uint64_t _main_timer;
+      uint64_t _report_timer;
+#endif
       
       // Routines
       void _control();
@@ -140,10 +158,10 @@ class CommManager {
       void _NOT_IMPLEMENTED_YET();
 
       // ESP32 dual core
-      #if defined ESP32
-         TaskHandle_t _six302_task;
-         static void _step_forever(void* params);
-      #endif
+#if defined ESP32
+      TaskHandle_t _six302_task;
+      static void _step_forever(void* params);
+#endif
 };
 
 #endif

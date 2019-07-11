@@ -1,4 +1,8 @@
 
+/* For this demo, make sure the `#define S302_SERIAL` macro
+   is chosen in the library. This demo should compile on the Teensy,
+   ESP32, and ESP8266. */
+
 #include "Six302.h"
 
 // microseconds
@@ -21,5 +25,5 @@ void setup() {
 
 void loop() {
    output = input * input;
-   cm.step();
+   cm.step(); // This line isn't necessary if compiling on the ESP32!
 }
