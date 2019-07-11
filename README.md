@@ -4,6 +4,7 @@ Used in MIT subject 6.302
 
 Documentation found here TB prettified.
 
+<!--
 ## Quick example
 
 ```cpp
@@ -33,6 +34,7 @@ void loop() {
    cm.step();
 }
 ```
+-->
 
 ## Desired goals
 
