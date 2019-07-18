@@ -6,6 +6,7 @@ CommManager::CommManager(uint32_t sp, uint32_t rp) {
 #if defined S302_WEBSOCKETS
    _wss = WebSocketsServer(80);
 #endif
+   strcpy(_build_string, "\fB");
 }
 
 #if defined S302_SERIAL
@@ -21,6 +22,7 @@ void CommManager::connect(HardwareSerial* s, uint32_t baud)
    while(!_serial);
    while( _serial->available() )
       _serial->read();
+   strcat(_build_string, "\n");
 #elif defined S302_WEBSOCKETS
 void CommManager::connect(char* ssid, char* pw) {
    // Serial should be ready to go
@@ -55,7 +57,7 @@ void CommManager::connect(char* ssid, char* pw) {
 
 bool CommManager::addToggle(bool* linker, const char* title) {
    if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LENGTH )
+   ||  strlen(title) > MAX_TITLE_LEN )
       return false;
    _controls[_total_controls++] = (float*)linker;
    sprintf(_tmp, "T\r%s\r", title);
@@ -65,7 +67,7 @@ bool CommManager::addToggle(bool* linker, const char* title) {
 
 bool CommManager::addButton(bool* linker, const char* title) {
    if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LENGTH )
+   ||  strlen(title) > MAX_TITLE_LEN )
       return false;
    _controls[_total_controls++] = (float*)linker;
    sprintf(_tmp, "B\r%s\r", title);
@@ -77,7 +79,7 @@ bool CommManager::addSlider(float* linker, const char* title,
                             std::initializer_list<float> range,
                             float resolution, bool toggle) {
    if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LENGTH )
+   ||  strlen(title) > MAX_TITLE_LEN )
       return false;
    _controls[_total_controls++] = linker;
    sprintf(_tmp, "S\r%s\r%f\r%f\r%f\r%s\r",
@@ -93,7 +95,7 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
                               std::initializer_list<float> yrange,
                               float resolution, bool sticky) {
    if( _total_controls + 2 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LENGTH )
+   ||  strlen(title) > MAX_TITLE_LEN )
       return false;
    _controls[_total_controls++] = linker_x;
    _controls[_total_controls++] = linker_y;
@@ -109,7 +111,7 @@ bool CommManager::addPlot(float* linker, const char* title,
                           std::initializer_list<float> yrange,
                           int steps_displayed, int num_plots) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LENGTH )
+   ||  strlen(title) > MAX_TITLE_LEN )
       return false;
    _reporters[_total_reporters++] = linker;
    sprintf(_tmp, "P\r%s\r%f\r%f\r%d\r%d\r",
@@ -121,7 +123,7 @@ bool CommManager::addPlot(float* linker, const char* title,
 
 bool CommManager::addNumber(float* linker, const char* title) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LENGTH )
+   ||  strlen(title) > MAX_TITLE_LEN )
       return false;
    _reporters[_total_reporters++] = linker;
    sprintf(_tmp, "N\r%s\rfloat\r", title);
@@ -131,7 +133,7 @@ bool CommManager::addNumber(float* linker, const char* title) {
 
 bool CommManager::addNumber(int32_t* linker, const char* title) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LENGTH )
+   ||  strlen(title) > MAX_TITLE_LEN )
       return false;
    _reporters[_total_reporters++] = (float*)linker;
    sprintf(_tmp, "N\r%s\rint\r", title);
@@ -142,17 +144,13 @@ bool CommManager::addNumber(int32_t* linker, const char* title) {
 /* The mitochondria */
 
 void CommManager::step() {
-   switch( _state ) {
-      case S302_DISCONNECTED: {
-         _wait_for_connection();
-      } break;
-      case S302_TALK: { // send info to GUI
-         if( _total_reporters
-         &&  _time_to_talk(_report_period) )
-            _report();
-         _control();
-      } break;
-   }
+   
+   if( _total_reporters
+   &&  _time_to_talk(_report_period) )
+      _report();
+      
+   _control();
+   
    _wait(); // loop control
 }
 
@@ -170,8 +168,8 @@ uint32_t CommManager::headroom() {
 
 void CommManager::_control() {
 
-   // read incoming message, if any
-   strcpy(_buf, "");
+   // READ incoming message, if any
+   _buf[0] = '\0';
 #if defined S302_SERIAL
    if( !_serial->available() )
       return;
@@ -181,27 +179,48 @@ void CommManager::_control() {
       if( _buf[i++] == '\n' ) // EOM
          break;
    }
+   _buf[i] = '\0';
 #elif defined S302_WEBSOCKETS
    _wss.loop();
 #endif
-   if( !strlen(_buf) ) return;
+
+   // PARSE the message
+   switch(_buf[0]) {
+      
+      case '\0': {
+         // (No message)
+         return;
+      } break;
+      
+      case '\n': {
+         // (GUI is asking for the build string)
+
+#if defined S302_SERIAL
+         _serial->write(
+#elif defined S302_WEBSOCKETS
+         _wss.broadcastBIN(
+#endif
+            (uint8_t*)_build_string, strlen(_build_string));
+         return;
+      } break;
+
+      default: {
+         // (update the value)
+      
+         int id = atoi(strtok(_buf, ":"));
+         char val[24];
+         strcpy(val, strtok(NULL, ":"));
+         if( !strcmp(val, "true") ) { // booly boi
+            *(bool*)_controls[id] = true;
+         } else if ( !strcmp(val, "false") ) { // also bool
+            *(bool*)_controls[id] = false;
+         } else { // float
+            *_controls[id] = atof(val);
+         }
+
+      } break;
+   }
    
-   // parse the message
-   int id = atoi(strtok(_buf, ":"));
-   if( id < 0 ) { // disconnect!
-      _state = S302_DISCONNECTED;
-      return;
-   }
-   // update the value
-   char val[24];
-   strcpy(val, strtok(NULL, ":"));
-   if( !strcmp(val, "true") ) { // booly boi
-      *(bool*)_controls[id] = true;
-   } else if ( !strcmp(val, "false") ) { // also bool
-      *(bool*)_controls[id] = false;
-   } else { // float
-      *_controls[id] = atof(val);
-   }
 }
 
 // Pack the important data as bytes
@@ -209,12 +228,13 @@ void CommManager::_control() {
 void CommManager::_report() {
 
    // Pack up the data
-   _buf[0] = 'R';
-   for( uint8_t i = 0; i < _total_reporters; i++ ) {
-      // I'm making the assumption that all reports are floats
-      // otherwise, use something like `sizeof(*_reporters[i])`
-      memcpy(&_buf[1 + 4 * i], _reporters[i], 4);
+   strcpy(_buf, "\fR");
+   uint8_t i = 0;
+   while( i < _total_reporters ) {
+      memcpy(&_buf[2 + 4*i], _reporters[i], 4);
+      i++;
    }
+   _buf[2 + 4*i] = '\n';
    
    // Send it off
 #if defined S302_SERIAL
@@ -222,27 +242,8 @@ void CommManager::_report() {
 #elif defined S302_WEBSOCKETS
    _wss.broadcastBIN(
 #endif
-      (uint8_t*)_buf, 4 * _total_reporters);
+      (uint8_t*)_buf, 3 + 4 * _total_reporters);
    
-}
-
-void CommManager::_wait_for_connection() {
-#if defined S302_SERIAL
-   if( (char)_serial->read() == '\n' )
-      _state = S302_TALK; // yay
-                          // we're connected
-   else if( _time_to_talk(S302_WAIT_FOR_CONNECT) )
-      _serial->println(_build_string);
-      
-#elif defined S302_WEBSOCKETS
-   _wss.loop();
-   if( _buf[0] == '\n' )
-      _state = S302_TALK;
-   else if( _time_to_talk(S302_WAIT_FOR_CONNECT) )
-      _wss.broadcastBIN((uint8_t*)_build_string, strlen(_build_string));
-         
-#endif
-
 }
 
 // Whether or not enough time has passed to report again.
@@ -317,14 +318,15 @@ void CommManager::_on_websocket_event(
 /* Else */
 
 void CommManager::debug(char* line) {
+   strcpy(_buf, "\fD");
+   strcat(_buf, line);
+   strcat(_buf, "\n");
 #if defined S302_SERIAL
-   _serial->print('D');
-   _serial->print(line);
-   _serial->write(0);
+   _serial->write(
 #elif defined S302_WEBSOCKETS
-   //Serial.println(line);
-   _NOT_IMPLEMENTED_YET();
+   _wss.broadcastBIN(
 #endif
+      (uint8_t*)_buf, strlen(_buf));
 }
 
 void CommManager::_NOT_IMPLEMENTED_YET() {

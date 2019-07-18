@@ -3,11 +3,11 @@
 
 /* Only have one of these uncommented! */
 
-//#define S302_SERIAL
-#define S302_WEBSOCKETS
+#define S302_SERIAL
+//#define S302_WEBSOCKETS
 
 #if defined (S302_WEBSOCKETS) && !defined (ESP32) && !defined (ESP8266)
-#error "Communication over WebSocket is only available for the ESP32 or ESP8266."
+#error "Communication over WebSockets is only available for the ESP32 or ESP8266."
 #endif
 
 #include <Arduino.h>
@@ -24,28 +24,18 @@ using namespace std::placeholders;
    Eventually these might dynamically change according to the MC */
 
 // How many elements you can add
-// Joystick counts as two controls
-#define MAX_CONTROLS      20
-#define MAX_REPORTERS     10
+// Joystick counts as two controls!
+#define MAX_CONTROLS  20
+#define MAX_REPORTERS 10
 
 // Max length of titles of controls & reporters
-#define MAX_TITLE_LENGTH  10
+#define MAX_TITLE_LEN  10
+#define MAX_BUFFER_LEN (2+4*MAX_REPORTERS+1+1)
 
-// Incoming and outgoing message length limits
-#define MAX_IN_LEN 28 /* (id)(:)(float)(\n) = 2+1+24+1 = 28 */
-#define MAX_OUT_LEN (1+4*MAX_REPORTERS+1)
-
-#define MAX_BUILD_STRING_LEN (MAX_CONTROLS*(8+MAX_TITLE_LENGTH+3*24+5))
-// 2340, last time I checked
 // Worst case is when we have 20 slider controls with long titles
+#define MAX_BUILD_STRING_LEN (2+MAX_CONTROLS*(8+MAX_TITLE_LEN+3*24+5)+1)
 
-// States
-#define S302_DISCONNECTED 0
-#define S302_LISTEN       1
-#define S302_TALK         2
-
-// How long to wait (in microseconds) before re-sending the buildstring
-#define S302_WAIT_FOR_CONNECT 5000000
+/* Class definition! */
 
 class CommManager {
    public:
@@ -112,8 +102,8 @@ class CommManager {
    protected:
       // Most important variables
       char _build_string[MAX_BUILD_STRING_LEN];
-      char _buf[MAX_OUT_LEN];
-      char _tmp[10+MAX_TITLE_LENGTH+5*24+5];
+      char _buf[MAX_BUFFER_LEN];
+      char _tmp[10+MAX_TITLE_LEN+5*24+5];
       
 #if defined S302_SERIAL
 #if defined TEENSYDUINO
@@ -151,7 +141,6 @@ class CommManager {
       // Routines
       void _control();
       void _report();
-      void _wait_for_connection();
       bool _time_to_talk(uint32_t time_to_wait);
       void _wait();
       
@@ -162,6 +151,7 @@ class CommManager {
       TaskHandle_t _six302_task;
       static void _step_forever(void* params);
 #endif
+
 };
 
 #endif
