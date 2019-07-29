@@ -7,6 +7,7 @@ CommManager::CommManager(uint32_t sp, uint32_t rp) {
    _wss = WebSocketsServer(80);
 #endif
    strcpy(_build_string, "\fB");
+   strcpy(_debug_string, "\fD");
 }
 
 #if defined S302_SERIAL
@@ -19,7 +20,7 @@ void CommManager::connect(HardwareSerial* s, uint32_t baud)
    _serial = s;
    _baud = baud;
    _serial->begin(baud);
-   while(!_serial);
+   while(!_serial); // does this even work?
    while( _serial->available() )
       _serial->read();
    strcat(_build_string, "\n");
@@ -41,6 +42,7 @@ void CommManager::connect(char* ssid, char* pw) {
    _wss.onEvent(std::bind(&CommManager::_on_websocket_event, this, _1, _2, _3, _4));
 #endif
 #if defined ESP32
+   baton = xSemaphoreCreateMutex();
    disableCore0WDT();
    xTaskCreatePinnedToCore(
       this->_step_forever,
@@ -223,9 +225,33 @@ void CommManager::_control() {
    
 }
 
-// Pack the important data as bytes
+// Send debug messages if any
+// Then pack the important data as bytes
 // And send 'em off
 void CommManager::_report() {
+
+#if defined ESP32
+   TAKE
+#endif
+
+   uint16_t n = strlen(_debug_string); // at most MAX_DEBUG_LEN-2
+   if( n > 2 ) {
+      _debug_string[n]   = '\n';
+      _debug_string[n+1] = '\0';
+      
+#if defined S302_SERIAL
+      _serial->write(
+#elif defined S302_WEBSOCKETS
+      _wss.broadcastBIN(
+#endif
+         (uint8_t*)_debug_string, n+1);
+         
+      strcpy(_debug_string, "\fD");
+   }
+   
+#if defined ESP32
+   GIVE
+#endif
 
    // Pack up the data
    strcpy(_buf, "\fR");
@@ -318,15 +344,30 @@ void CommManager::_on_websocket_event(
 /* Else */
 
 void CommManager::debug(char* line) {
-   strcpy(_buf, "\fD");
-   strcat(_buf, line);
-   strcat(_buf, "\n");
-#if defined S302_SERIAL
-   _serial->write(
-#elif defined S302_WEBSOCKETS
-   _wss.broadcastBIN(
+
+   // Add to the debug string buffer
+   // (cuts off if too long though)
+
+#if defined ESP32
+   TAKE
 #endif
-      (uint8_t*)_buf, strlen(_buf));
+
+   uint16_t m = strlen(line);
+   uint16_t n = strlen(_debug_string);
+   uint16_t i = 0;
+   while( i < m && n <= MAX_DEBUG_LEN-3 ) {
+      _debug_string[n] = (line[i] != '\n'? line[i] : '\r');
+      i++; n++;
+   }
+
+   _debug_string[n]   = '\r';
+   _debug_string[n+1] = '\0';
+
+#if defined ESP32
+   GIVE
+#endif
+   
+   // _debug_string will be sent at each report period
 }
 
 void CommManager::_NOT_IMPLEMENTED_YET() {

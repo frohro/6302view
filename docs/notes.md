@@ -151,5 +151,5 @@ Therefore, from the GUI perspective, messages coming in starting with `\fR` will
 
 #### How debug messages are sent
 
-When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Each line of the user's debug messages starts with `\fD`, follows with the line, and terminates by `\n`.
+When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Each line of the user's debug messages starts with `\fD`, follows with the line, and terminates by `\n`. Multiple lines of a debug message are separated by `\r`. THe debug string is sent once per report period.
 

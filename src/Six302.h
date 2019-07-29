@@ -20,7 +20,12 @@
 using namespace std::placeholders;
 #endif
 
-/* Arbitrary limits
+#if defined ESP32
+#define TAKE xSemaphoreTake(baton, portMAX_DELAY);
+#define GIVE xSemaphoreGive(baton);
+#endif
+
+/* ARBITRARY LIMITS
    Eventually these might dynamically change according to the MC */
 
 // How many elements you can add
@@ -34,6 +39,10 @@ using namespace std::placeholders;
 
 // Worst case is when we have 20 slider controls with long titles
 #define MAX_BUILD_STRING_LEN (2+MAX_CONTROLS*(8+MAX_TITLE_LEN+3*24+5)+1)
+
+// Length of debug messages **per report period**
+// Increase if your messages are getting cut off and you have space left
+#define MAX_DEBUG_LEN 1000
 
 /* Class definition! */
 
@@ -91,7 +100,7 @@ class CommManager {
       // Other
       
       uint32_t headroom();
-      
+
       void debug(char*);
       //void debug(String);
       //void debug(bool);
@@ -137,12 +146,20 @@ class CommManager {
       uint64_t _main_timer;
       uint64_t _report_timer;
 #endif
+
+      // Semaphore handle for the ESP32
+#if defined ESP32
+      SemaphoreHandle_t baton;
+#endif
       
       // Routines
       void _control();
       void _report();
       bool _time_to_talk(uint32_t time_to_wait);
       void _wait();
+
+      // Debug messages
+      char _debug_string[MAX_DEBUG_LEN];
       
       void _NOT_IMPLEMENTED_YET();
 
