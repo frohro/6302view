@@ -117,8 +117,9 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
 
 bool CommManager::addPlot(float* linker, const char* title,
                           std::initializer_list<float> yrange,
+                          uint8_t tally,
                           uint8_t steps_displayed,
-                          uint8_t tally, uint8_t num_plots) {
+                          uint8_t num_plots) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LEN
    ||  tally == 0
@@ -129,7 +130,7 @@ bool CommManager::addPlot(float* linker, const char* title,
    _tallies[_total_reporters++] = tally;
    sprintf(_buf, "P\r%s\r%f\r%f\r%d\r%d\r%d\r",
       title, *yrange.begin(), *(yrange.begin()+1),
-      steps_displayed, tally, num_plots);
+      tally, steps_displayed, num_plots);
    strcat(_build_string, _buf);
    
    return true;
@@ -144,7 +145,7 @@ bool CommManager::addNumber(float* linker, const char* title, uint8_t tally) {
       
    _reporters[_total_reporters] = linker;
    _tallies[_total_reporters++] = tally;
-   sprintf(_buf, "N\r%s\rfloat\r", title);
+   sprintf(_buf, "N\r%s\r%d\rfloat\r", title, tally);
    strcat(_build_string, _buf);
    
    return true;
@@ -159,7 +160,7 @@ bool CommManager::addNumber(int32_t* linker, const char* title, uint8_t tally) {
 
    _reporters[_total_reporters] = (float*)linker;
    _tallies[_total_reporters++] = tally;
-   sprintf(_buf, "N\r%s\rint\r", title);
+   sprintf(_buf, "N\r%s\r%d\rint\r", title, tally);
    strcat(_build_string, _buf);
 
    return true;
