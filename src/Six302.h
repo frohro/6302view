@@ -21,8 +21,17 @@ using namespace std::placeholders;
 #endif
 
 #if defined ESP32
-#define TAKE xSemaphoreTake(baton, portMAX_DELAY);
-#define GIVE xSemaphoreGive(baton);
+#define TAKE xSemaphoreTake(_baton, portMAX_DELAY);
+#define GIVE xSemaphoreGive(_baton);
+#else
+#define TAKE
+#define GIVE
+#endif
+
+#if defined S302_SERIAL
+#define BROADCAST _serial->write
+#elif defined S302_WEBSOCKETS
+#define BROADCAST _wss.broadcastBIN
 #endif
 
 /* ARBITRARY LIMITS
@@ -32,6 +41,7 @@ using namespace std::placeholders;
 // Joystick counts as two controls!
 #define MAX_CONTROLS  20
 #define MAX_REPORTERS 10
+#define MAX_TALLY     10
 
 // Max length of titles of controls & reporters
 #define MAX_TITLE_LEN  10
@@ -89,10 +99,11 @@ class CommManager {
          float* linker,
          const char* title,
          std::initializer_list<float> yrange,
-         int steps_displayed=10,
-         int num_plots=1);
-      bool addNumber(int32_t* linker, const char* title);
-      bool addNumber(float* linker, const char* title);
+         uint8_t steps_displayed=10,
+         uint8_t tally=1,
+         uint8_t num_plots=1);
+      bool addNumber(int32_t* linker, const char* title, uint8_t tally=1);
+      bool addNumber(float* linker, const char* title, uint8_t tally=1);
 
       // Tick
       void step();
@@ -109,10 +120,9 @@ class CommManager {
       //void debug(double);
 
    protected:
-      // Most important variables
       char _build_string[MAX_BUILD_STRING_LEN];
       char _buf[MAX_BUFFER_LEN];
-      char _tmp[10+MAX_TITLE_LEN+5*24+5];
+      uint8_t _recordings[MAX_REPORTERS][MAX_TALLY][4];
       
 #if defined S302_SERIAL
 #if defined TEENSYDUINO
@@ -139,21 +149,23 @@ class CommManager {
       uint32_t _step_period;
       uint32_t _report_period;
       int32_t _headroom;
+      uint8_t _tallies[MAX_REPORTERS];
 #if defined TEENSYDUINO
       elapsedMicros _main_timer;
       elapsedMicros _report_timer;
 #elif defined (ESP32) || (ESP8266)
-      uint64_t _main_timer;
-      uint64_t _report_timer;
+      uint32_t _main_timer;
+      uint32_t _report_timer;
 #endif
 
       // Semaphore handle for the ESP32
 #if defined ESP32
-      SemaphoreHandle_t baton;
+      SemaphoreHandle_t _baton;
 #endif
       
       // Routines
       void _control();
+      void _record(uint8_t reporter);
       void _report();
       bool _time_to_talk(uint32_t time_to_wait);
       void _wait();

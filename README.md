@@ -47,6 +47,8 @@ void loop() {
    * Over port (pass in your `Serial` and BAUD rate)
    * Websockets (pass in SSID and p/w)
 
+[WebSocket library used](https://github.com/Links2004/arduinoWebSockets)
+
 ## Backburner
 
 * Potentially to support the following microcontrollers:
