@@ -99,8 +99,8 @@ class CommManager {
          float* linker,
          const char* title,
          std::initializer_list<float> yrange,
-         uint8_t tally=1,
          uint8_t steps_displayed=10,
+         uint8_t tally=1,
          uint8_t num_plots=1);
       bool addNumber(int32_t* linker, const char* title, uint8_t tally=1);
       bool addNumber(float* linker, const char* title, uint8_t tally=1);

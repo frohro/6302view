@@ -117,8 +117,8 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
 
 bool CommManager::addPlot(float* linker, const char* title,
                           std::initializer_list<float> yrange,
-                          uint8_t tally,
                           uint8_t steps_displayed,
+                          uint8_t tally,
                           uint8_t num_plots) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LEN
@@ -130,7 +130,7 @@ bool CommManager::addPlot(float* linker, const char* title,
    _tallies[_total_reporters++] = tally;
    sprintf(_buf, "P\r%s\r%f\r%f\r%d\r%d\r%d\r",
       title, *yrange.begin(), *(yrange.begin()+1),
-      tally, steps_displayed, num_plots);
+      steps_displayed, tally, num_plots);
    strcat(_build_string, _buf);
    
    return true;
