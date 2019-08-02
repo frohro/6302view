@@ -29,9 +29,9 @@ using namespace std::placeholders;
 #endif
 
 #if defined S302_SERIAL
-#define BROADCAST _serial->write
+#define BROADCAST(msg, len) _serial->write((uint8_t*)msg, len)
 #elif defined S302_WEBSOCKETS
-#define BROADCAST _wss.broadcastBIN
+#define BROADCAST(msg, len) _wss.broadcastBIN((uint8_t*)msg, len)
 #endif
 
 /* ARBITRARY LIMITS
@@ -139,8 +139,6 @@ class CommManager {
          uint8_t* payload,
          size_t length);
 #endif
-      
-      uint8_t _state;
       
       float* _controls[MAX_CONTROLS];   uint8_t _total_controls;
       float* _reporters[MAX_REPORTERS]; uint8_t _total_reporters;

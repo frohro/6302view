@@ -227,8 +227,8 @@ void CommManager::_control() {
       case '\n': {
          // (GUI is asking for the build string)
          // send buildstring
-         BROADCAST((uint8_t*)_build_string, strlen(_build_string));
-         BROADCAST('\n');
+         BROADCAST(_build_string, strlen(_build_string));
+         BROADCAST("\n", 2);
          return;
       } break;
 
@@ -272,8 +272,8 @@ void CommManager::_report() {
    // Debug messages
    uint16_t n = strlen(_debug_string); // at most MAX_DEBUG_LEN-2
    if( n > 2 ) {
-      BROADCAST((uint8_t*)_debug_string, n);
-      BROADCAST('\n');
+      BROADCAST(_debug_string, n);
+      BROADCAST("\n", 2);
       strcpy(_debug_string, "\fD");
    }
 
@@ -281,13 +281,13 @@ void CommManager::_report() {
 
    // Data report
    strcpy(_buf, "\fR");
-   BROADCAST((uint8_t*)_buf, 2);
+   BROADCAST(_buf, 2);
    
    for( uint8_t reporter = 0; reporter < _total_reporters; reporter++ )
       for( uint8_t tally = 0; tally < _tallies[reporter]; tally++ ) 
          BROADCAST(_recordings[reporter][tally], 4);
          
-   BROADCAST('\n');
+   BROADCAST("\n", 2);
 
 }
 
