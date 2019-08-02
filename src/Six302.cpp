@@ -1,4 +1,11 @@
+
+/* Reach out to almonds@mit.edu or jodalyst@mit.edu for help */
+
 #include "Six302.h"
+
+/* PUBLIC ROUTINES */
+
+/* Initialization */
 
 CommManager::CommManager(uint32_t sp, uint32_t rp) {
    _step_period = sp;
@@ -9,6 +16,9 @@ CommManager::CommManager(uint32_t sp, uint32_t rp) {
    strcpy(_build_string, "\fB");
    strcpy(_debug_string, "\fD");
 }
+
+/* :: connect( &Serial, baud ) 
+             ( "ssid", "p/w" ) */
 
 #if defined S302_SERIAL
 #if defined TEENSYDUINO
@@ -43,17 +53,28 @@ void CommManager::connect(char* ssid, char* pw) {
 #if defined ESP32
    _baton = xSemaphoreCreateMutex();
    disableCore0WDT();
-   xTaskCreatePinnedToCore( this->_step_forever,
+   xTaskCreatePinnedToCore( _walk,
                             "6302view",
-                            10000, /* Stack size, in words, can probably be decreased */
+                            4096, /* Stack size, in words, can probably be decreased */
                             this,
                             0,
                             &_six302_task,
                             0 );
 #endif
+   // Initialize timers
+#if defined TEENSYDUINO
+   _main_timer = 0;
+#else
+   _main_timer = micros();
+#endif
+#if defined ESP32
+   _secondary_timer = micros();
+#endif
 }
 
-/* Controls */
+/* To add CONTROLS */
+
+/* :: addToggle( link, title ) */
 
 bool CommManager::addToggle(bool* linker, const char* title) {
    if( _total_controls + 1 > MAX_CONTROLS
@@ -67,6 +88,8 @@ bool CommManager::addToggle(bool* linker, const char* title) {
    return true;
 }
 
+/* :: addButton( link, title ) */
+
 bool CommManager::addButton(bool* linker, const char* title) {
    if( _total_controls + 1 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LEN )
@@ -79,26 +102,51 @@ bool CommManager::addButton(bool* linker, const char* title) {
    return true;
 }
 
+/* :: addSlider( link, title, range, resoultion ) */
+
 bool CommManager::addSlider(float* linker, const char* title,
+#if defined S302_UNO
+                            float range_min, float range_max,
+#else
                             std::initializer_list<float> range,
+#endif
                             float resolution, bool toggle) {
    if( _total_controls + 1 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LEN )
       return false;
-      
+
    _controls[_total_controls++] = linker;
+#if defined S302_UNO
+   dtostrf(range_min, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "S\r%s\r%s\r", title, _tmp);
+   strcat(_build_string, _buf);
+   dtostrf(range_max, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "%s\r", _tmp);
+   strcat(_build_string, _buf);
+   dtostrf(resolution, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "%s\r%s\r", _tmp, toggle? "True":"False");
+   strcat(_build_string, _buf);
+#else
    sprintf(_buf, "S\r%s\r%f\r%f\r%f\r%s\r",
       title, *range.begin(), *(range.begin()+1),
       resolution, toggle? "True":"False");
    strcat(_build_string, _buf);
+#endif
    
    return true;
 }
 
+/* :: addJoystick( link, link, title, xrange, yrange, resolution ) */
+
 bool CommManager::addJoystick(float* linker_x, float* linker_y,
                               const char* title,
+#if defined S302_UNO
+                              float xrange_min, float xrange_max,
+                              float yrange_min, float yrange_max,
+#else
                               std::initializer_list<float> xrange,
                               std::initializer_list<float> yrange,
+#endif
                               float resolution, bool sticky) {
    if( _total_controls + 2 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LEN )
@@ -106,17 +154,42 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
       
    _controls[_total_controls++] = linker_x;
    _controls[_total_controls++] = linker_y;
+#if defined S302_UNO
+   dtostrf(xrange_min, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "J\r%s\r%s\r", title, _tmp);
+   strcat(_build_string, _buf);
+   dtostrf(xrange_max, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "%s\r", _tmp);
+   strcat(_build_string, _buf);
+   dtostrf(yrange_min, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "%s\r", _tmp);
+   strcat(_build_string, _buf);
+   dtostrf(yrange_max, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "%s\r", _tmp);
+   strcat(_build_string, _buf);
+   dtostrf(resolution, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "%s\r%s\r",
+      _tmp, sticky? "True":"False");
+   strcat(_build_string, _buf);
+#else
    sprintf(_buf, "J\r%s\r%f\r%f\r%f\r%f\r%f\r%s\r",
       title, *xrange.begin(), *(xrange.begin()+1),
              *yrange.begin(), *(yrange.begin()+1),
-             resolution, sticky? "True":"False");
+      resolution, sticky? "True":"False");
    strcat(_build_string, _buf);
+#endif
    
    return true;
 }
 
+/* :: addPlot( link, title, yrange ) */
+
 bool CommManager::addPlot(float* linker, const char* title,
+#if defined S302_UNO
+                          float yrange_min, float yrange_max,
+#else
                           std::initializer_list<float> yrange,
+#endif
                           uint8_t steps_displayed,
                           uint8_t tally,
                           uint8_t num_plots) {
@@ -128,15 +201,29 @@ bool CommManager::addPlot(float* linker, const char* title,
 
    _reporters[_total_reporters] = linker;
    _tallies[_total_reporters++] = tally;
+#if defined S302_UNO
+   dtostrf(yrange_min, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "P\r%s\r", title, _tmp);
+   strcat(_build_string, _buf);
+   dtostrf(yrange_max, 0, MAX_PREC, _tmp);
+   sprintf(_buf, "%s\r%d\r%d\r%d\r",
+      _tmp, steps_displayed, tally, num_plots);
+   strcat(_build_string, _buf);
+#else
    sprintf(_buf, "P\r%s\r%f\r%f\r%d\r%d\r%d\r",
       title, *yrange.begin(), *(yrange.begin()+1),
       steps_displayed, tally, num_plots);
    strcat(_build_string, _buf);
+#endif
    
    return true;
 }
 
-bool CommManager::addNumber(float* linker, const char* title, uint8_t tally) {
+/* :: addNumber( link, title ) */
+
+bool CommManager::addNumber(float* linker,
+                            const char* title,
+                            uint8_t tally) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LEN
    ||  tally == 0
@@ -151,7 +238,9 @@ bool CommManager::addNumber(float* linker, const char* title, uint8_t tally) {
    return true;
 }
 
-bool CommManager::addNumber(int32_t* linker, const char* title, uint8_t tally) {
+bool CommManager::addNumber(int32_t* linker,
+                            const char* title,
+                            uint8_t tally) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LEN
    ||  tally == 0
@@ -166,10 +255,14 @@ bool CommManager::addNumber(int32_t* linker, const char* title, uint8_t tally) {
    return true;
 }
 
-/* The mitochondria */
+/* THE MITOCHONDRIA */
 
+#if !defined ESP32
 void CommManager::step() {
-
+#else
+void CommManager::_step() {
+#endif
+   
    if( _total_reporters ) {
 
       if( _time_to_talk(_report_period) )
@@ -179,24 +272,47 @@ void CommManager::step() {
          _record(reporter);
 
    }
-      
+
    _control();
-   
+
+#if defined ESP32
+
+   int32_t leftover = _step_period - (micros() - _secondary_timer);
+   if( leftover > 0 )
+      delayMicroseconds(leftover);
+   _secondary_timer = micros();
+
+#else
+
    _wait(); // loop control
+
+#endif
    
 }
 
 #if defined ESP32
-void CommManager::_step_forever(void* param) {
-   CommManager* parent = static_cast<CommManager*>(param);
-   for(;;)
-      parent->step();
+void CommManager::step() {
+   // Just sugar, offering loop control
+   _wait();
+}
+
+void CommManager::_walk(void* param) {
+   CommManager* ptr = (CommManager*)param;
+   for(;;) {
+      ptr->_step();
+   }
 }
 #endif
+
+/* :: headroom() */
 
 uint32_t CommManager::headroom() {
    return _headroom;
 }
+
+/* PRIVATE ROUTINES */
+
+/* :: _control() */
 
 void CommManager::_control() {
 
@@ -251,11 +367,13 @@ void CommManager::_control() {
    
 }
 
+/* :: _record( reporter ) */
+
 void CommManager::_record(uint8_t reporter) {
    float tally;
 #if defined TEENSYDUINO
    tally = (float)_report_timer
-#elif defined (ESP32) || (ESP8266)
+#else
    tally = (float)(micros() - _report_timer)
 #endif
        * (float)_tallies[reporter] / (float)_report_period;
@@ -263,9 +381,11 @@ void CommManager::_record(uint8_t reporter) {
    memcpy(&_recordings[reporter][index], (char*)_reporters[reporter], 4);
 }
 
-// Send debug messages if any
-// Then send data report
+/* :: _report() */
+
 void CommManager::_report() {
+   // Send debug messages if any
+   // Then send data report
 
    TAKE
    
@@ -291,23 +411,25 @@ void CommManager::_report() {
 
 }
 
-// Whether or not enough time has passed according to the given
-// time period. Determines when to report data.
+/* :: _time_to_talk( time_to_wait ) */
+
 bool CommManager::_time_to_talk(uint32_t time_to_wait) {
+   // Whether or not enough time has passed according to the given
+   // time period. Determines when to report data.
    // depends on the microcontroller
 #if defined TEENSYDUINO
    if( time_to_wait <= _report_timer ) {
       _report_timer = _report_timer - time_to_wait;
-#elif defined (ESP32) || (ESP8266)
+#else
    if( time_to_wait <= (micros() - _report_timer) ) {
       _report_timer = _report_timer + time_to_wait;
-#else
-   _NOT_IMPLEMENTED_YET();
 #endif
       return true;
    }
    return false;
 }
+
+/* :: _wait() */
 
 void CommManager::_wait() {
    // How we wait depends on the microcontroller
@@ -316,19 +438,17 @@ void CommManager::_wait() {
    while(_step_period > _main_timer);
    _headroom = _main_timer - before;
    _main_timer = 0;
-#elif defined (ESP32) || (ESP8266)
+#else
    _headroom = _step_period - (micros() - _main_timer);
    if( _headroom > 0 )
       delayMicroseconds(_headroom);
    _main_timer = micros();
-#else
-   _NOT_IMPLEMENTED_YET();
 #endif
 }
 
+/* WebSocket event */
+
 #if defined S302_WEBSOCKETS
-// I eventually may implement a VERBOSE option to control whether anything
-// is printed to Serial
 void CommManager::_on_websocket_event(
    uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
    

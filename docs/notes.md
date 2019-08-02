@@ -2,6 +2,29 @@
 
 Diagrams to be added. This page to be prettified.
 
+## Table of contents
+
+* [Set-up](#set-up)
+  * [Serial](#serial)
+  * [WebSockets](#websockets)
+  * [Adding modules](#adding-modules)
+    * [Controls](#controls)
+    * [Reporters](#reporters)
+  * [`cm.step`](#cmstep)
+  * [For example](#for-example)
+* [Microcontroller differences](microcontroller-differences)
+  * [Quick table](#quick-table)
+  * [Arduino Uno](#arduino-uno)
+  * [Teensy](#teensy)
+  * [ESP8266](#esp8266)
+  * [ESP32](#esp32)
+* [How the information is communicated (the details)](#how-the-information-is-communicated-the-details)
+  * [GUI → Microcontroller](#gui--microcontroller)
+  * [Microcontroller → GUI](#microcontroller--gui)
+    * [How build instructions are sent](#how-build-instructions-are-sent)
+    * [How the data are reported](#how-the-data-are-reported)
+    * [How debug messages are sent](#how-debug-messages-are-sent)
+
 ## Set-up
 
 Start off including the library and creating an instance of the `CommManager` class.
@@ -103,6 +126,61 @@ void loop() {
 ```
 
 This creates one control (a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 to 0 to 25.
+
+## Microcontroller differences
+
+(In rough order of least capability to most capability.)
+
+### Quick table
+
+| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_TALLY` | `MAX_DEBUG_LEN` |
+| ---------------:|:--------------:|:---------------:|:-----------:|:---------------:|
+| Arduino Uno     | 5              | 5               | 5           | 500             |
+| Teensy          | 20             | 10              | 10          | 1000            |
+| ESP8266         | 20             | 10              | 10          | 1000            |
+| ESP32           | 20             | 10              | 10          | 1000            |
+
+Attempting to add more controls or reporters when the maximum is met will not do anything.
+
+`MAX_TALLY` sets the maximum number of data recordings, per reporter, per report period. See the (currently non-existent) section for more details.
+
+`MAX_DEBUG_LEN` sets the maximum amount of characters you are able to send per report period using the `debug` routine. If your debug messages are being cut off, either shorten your messages, send less of them per report period, or increase this constant.
+
+### Arduino Uno
+
+The Arduino Uno has remarkable limitations in comparison to the other microcontrollers supported in this project. Because of this, constraints are in place with respect to memory and syntax.
+
+For the routines that add elements that require you to specify a range (namely, `addSlider`, `addJoystick`, and `addPlot`), curly braces (`initializer_list`s) should not be used to specify the ranges; in its place, give two arguments -- for the lower and the higher end of the range. For example:
+
+```cpp
+// not supported:
+cm.addSlider(&input, "Input", {-5, 5}, 0.1);
+cm.addPlot(&output, "Output", {-1, 30});
+
+// supported:
+cm.addSlider(&input, "Input", -5, 5, 0.1);
+cm.addPlot(&output, "Output", -1, 30);
+```
+
+The curly braces are there as sugar to make your code a bit more human-readable. The intent is also to make it less difficult to remember the list of arguments of these routines. For instance, it's probably easier to recognize that `cm.addSlider(&x, "x", {0, 10}, 0.1);` creates a slider between 0 and 10 at a step size of 0.1 than it is to get the same idea from `cm.addSlider(&x, "x", 0, 10, 0.1);`, and it's probably easier to remember "link, name, range" than "link, name, low, high" for the `addPlot` routine after a long weekend.
+
+The Uno cannot natively format floats into strings or char arrays using `sprintf`. Instead, it uses `dtostrf`, which takes an argument specifying the number of digits after the decimal point to be printed. One may change the `MAX_PREC` definition in the `.h` to adjust this argument.
+
+The Uno cannot communicate over WebSockets.
+
+### Teensy
+
+For the Teensy, ESP8266, and ESP32, curly braces are expected to denote ranges when adding elements. The Teensy can only communicate over Serial, like the Uno.
+
+### ESP8266
+
+The ESP8266 is practically the same as the Teensy, except it supports communication over WebSockets.
+
+### ESP32
+
+Because the ESP32 has a second core, it is desirable to run the `CommManager` over there, rather than on the primary core, to open up headroom. `cm.step` in your `loop` routine will still work; however, it's only sugar offering timing control. `cm.headroom()` returns the headroom for your `loop` routine because it is likely to be more useful than the headroom for the task running on the second core, which is generally constant around six microseconds off of the step period.
+
+The ESP32 also supports communication over WebSockets.
 
 ## How the information is communicated (the details)
 
