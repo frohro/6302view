@@ -12,7 +12,7 @@ Diagrams to be added. This page to be prettified.
     * [Reporters](#reporters)
   * [`cm.step`](#cmstep)
   * [For example](#for-example)
-* [Microcontroller differences](microcontroller-differences)
+* [Microcontroller differences](#microcontroller-differences)
   * [Quick table](#quick-table)
   * [Arduino Uno](#arduino-uno)
   * [Teensy](#teensy)
