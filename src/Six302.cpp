@@ -14,7 +14,7 @@ CommManager::CommManager(uint32_t sp, uint32_t rp) {
    _wss = WebSocketsServer(80);
 #endif
    strcpy(_build_string, "\fB");
-   strcpy(_debug_string, "\fD");
+   _debug_string[0] = '\0';
 }
 
 /* :: connect( &Serial, baud ) 
@@ -390,12 +390,15 @@ void CommManager::_report() {
    TAKE
    
    // Debug messages
-   uint16_t n = strlen(_debug_string); // at most MAX_DEBUG_LEN-2
+   uint16_t n = strlen(_debug_string);
    if( n > 2 ) {
+      BROADCAST("\fD", 2);
+      BROADCAST(&_headroom_rp, 4);
       BROADCAST(_debug_string, n);
       BROADCAST("\n", 2);
-      strcpy(_debug_string, "\fD");
+      _debug_string[0] = '\0';
    }
+   _headroom_rp = (float)INT32_MAX;
 
    GIVE
 
@@ -444,6 +447,7 @@ void CommManager::_wait() {
       delayMicroseconds(_headroom);
    _main_timer = micros();
 #endif
+   _headroom_rp = (float)(min((int32_t)_headroom_rp, _headroom));
 }
 
 /* WebSocket event */
@@ -491,7 +495,7 @@ void CommManager::debug(char* line) {
    uint16_t m = strlen(line);
    uint16_t n = strlen(_debug_string);
    uint16_t i = 0;
-   while( i < m && n <= MAX_DEBUG_LEN-3 ) {
+   while( i < m && n <= MAX_DEBUG_LEN-2 ) {
       _debug_string[n] = (line[i] != '\n'? line[i]:'\r');
       i++; n++;
    }

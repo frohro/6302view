@@ -239,7 +239,8 @@ class CommManager {
 
       uint32_t _step_period;
       uint32_t _report_period;
-      int32_t _headroom;
+      int32_t  _headroom;    // headroom for the last step
+      float    _headroom_rp; // lowest headroom over the last report period
 
 #if defined TEENSYDUINO
       elapsedMicros _main_timer;

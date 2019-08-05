@@ -35,13 +35,13 @@ Start off including the library and creating an instance of the `CommManager` cl
 CommManager cm(1000, 5000);
 ```
 
-The numbers control the rate at which the system works. `1000` is the time in microseconds between loops (step period), and `5000` is the time in microseconds between each *report* (report period).
+The numbers control the rate at which the system operates. `1000` is the time in microseconds between loops (step period), and `5000` is the time in microseconds between each *report* (report period).
 
 There are, so far, two modes of communication between the GUI and the microcontroller. Data can be communicated over **Serial**, or by **WebSockets**.
 
 ### Serial
 
-Choose `#define S302_SERIAL` at the top of `Six302.h` for this mode. To connect, enter a Serial pointer and BAUD rate:
+This is default. To connect, enter a Serial pointer and BAUD rate:
 
 ```cpp
 cm.connect(&Serial, 115200);
@@ -49,7 +49,7 @@ cm.connect(&Serial, 115200);
 
 ### WebSockets
 
-Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode. To connect, enter your SSID and p/w:
+This is not the default. Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode. This method can only work on the ESP8266 or ESP32. To connect, enter your SSID and p/w:
 
 ```cpp
 cm.connect("Mom use this one", "password");
@@ -64,7 +64,9 @@ Connecting to Mom use this one WiFi .. connected!
 
 ### Adding modules
 
-To add controls and reporters, use the following `CommMannger` routines.
+To add controls and reporters, use the following `CommManager` routines.
+
+<!--Pictures to be added.-->
 
 #### Controls
 
@@ -78,9 +80,17 @@ To add controls and reporters, use the following `CommMannger` routines.
 * Add a plot module with `addPlot`
 * Add a plain number module with `addNumber`
 
-Check the header file for what arguments these take. In general, it's `pointer`, `title`, followed by other, potentially optional args. <!-- to be filled in -->
+In general, the arguments these take are:
+
+* `pointer`
+* `title`
+* followed by other, potentially optional args.
+
+I will add comprehensive examples later in development. For the time being, check the header file for what arguments these take specifically.
 
 ### `cm.step`
+
+`cm.step` updates the inputs, reports the outputs, and conveniently blocks according to your given loop rate (e.g. the 1000 microseconds below).
 
 ```cpp
 void loop() {
@@ -89,20 +99,7 @@ void loop() {
 }
 ```
 
-`cm.step` updates the inputs, reports the outputs, and conveniently blocks according to your given loop rate (e.g. the 1000 microseconds above).
-
-**Note**: On the ESP32, `cm.step` runs on the second core and so does not need to be ran in the main loop as it does for other microcontrollers.
-
 ## For example
-
-On the **Teensy** over **Serial**, at the head of `Six302.h`, you would have
-
-```cpp
-#define S302_SERIAL
-//#define S302_WEBSOCKETS
-```
-
-and in your `.ino`, you may have:
 
 ```cpp
 #include <Six302.h>
@@ -125,7 +122,9 @@ void loop() {
 }
 ```
 
-This creates one control (a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 to 0 to 25.
+This creates one control (a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 down to 0 up to 25.
+
+(Pictures to be added.)
 
 ## Microcontroller differences
 
@@ -140,7 +139,7 @@ This creates one control (a slider) and one reporter (a plot). The input is squa
 | ESP8266         | 20             | 10              | 10          | 1000            |
 | ESP32           | 20             | 10              | 10          | 1000            |
 
-Attempting to add more controls or reporters when the maximum is met will not do anything.
+Attempting to add more controls or reporters when the respective maximum is met will not add more.
 
 `MAX_TALLY` sets the maximum number of data recordings, per reporter, per report period. See the (currently non-existent) section for more details.
 
@@ -153,11 +152,11 @@ The Arduino Uno has remarkable limitations in comparison to the other microcontr
 For the routines that add elements that require you to specify a range (namely, `addSlider`, `addJoystick`, and `addPlot`), curly braces (`initializer_list`s) should not be used to specify the ranges; in its place, give two arguments -- for the lower and the higher end of the range. For example:
 
 ```cpp
-// not supported:
+// supported only on the Teensy, ESP8266, and ESP32:
 cm.addSlider(&input, "Input", {-5, 5}, 0.1);
 cm.addPlot(&output, "Output", {-1, 30});
 
-// supported:
+// supported only on the Uno:
 cm.addSlider(&input, "Input", -5, 5, 0.1);
 cm.addPlot(&output, "Output", -1, 30);
 ```
@@ -193,9 +192,9 @@ The ESP32 also supports communication over WebSockets.
 
 There are three types of signals sent from the microcontroller:
 
-* What modules to build
-* The data report
-* Debugger messages
+* What modules to **B**uild
+* The data **R**eport
+* **D**ebugger messages
 
 **Note:** All messages sent from the microcontroller to the GUI are enclosed in `\f` to start and `\n` to close.
 
@@ -217,17 +216,21 @@ For example, the build string for the quick example above (the one that adds a s
 \fBS\rInput\r-5.000000\r5.000000\r0.100000\rFalse\rP\rOutput\r-1.000000\r30.000000\r10\r1\r\n
 ```
 
+(Picture to be added.)
+
 <!--(Sadly, the carriage return is not rendered as a new line in the serial monitor (Arduino IDE 1.8.9 on Windows 10).)-->
 
 #### How the data are reported
 
-Report messages take the form of `\fR` followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value, closing with `\n`. The bytes are sent in the order they were added, which is precisely the order as they appear in the build string.
+Report messages take the form of `\fR` followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value, closing with `\n`. The bytes are sent in the order they were added in setup, which is precisely the order as they appear in the build string.
 
 Therefore, from the GUI perspective, messages coming in starting with `\fR` will have `4 * _total_reporters` bytes follow, then the closing `\n`.
 
-<!-- Issue with missed bits??? -->
-
 #### How debug messages are sent
 
-When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Each line of the user's debug messages starts with `\fD`, follows with the line, and terminates by `\n`. Multiple lines of a debug message are separated by `\r`. THe debug string is sent once per report period.
+When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Debug messages start with `\fD`, then with four bytes representing the lowest headroom over the last report period as a `float`, follows with the user's actual message, and terminates by `\n`. Multiple lines in one debug message are separated by `\r`. The debug string is sent once per report period.
+
+(Currently only `char` arrays are supported.)
+
+(Picture to be added.)
 
