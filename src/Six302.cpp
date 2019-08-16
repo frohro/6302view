@@ -105,11 +105,7 @@ bool CommManager::addButton(bool* linker, const char* title) {
 /* :: addSlider( link, title, range, resoultion ) */
 
 bool CommManager::addSlider(float* linker, const char* title,
-#if defined S302_UNO
                             float range_min, float range_max,
-#else
-                            std::initializer_list<float> range,
-#endif
                             float resolution, bool toggle) {
    if( _total_controls + 1 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LEN )
@@ -140,13 +136,8 @@ bool CommManager::addSlider(float* linker, const char* title,
 
 bool CommManager::addJoystick(float* linker_x, float* linker_y,
                               const char* title,
-#if defined S302_UNO
                               float xrange_min, float xrange_max,
                               float yrange_min, float yrange_max,
-#else
-                              std::initializer_list<float> xrange,
-                              std::initializer_list<float> yrange,
-#endif
                               float resolution, bool sticky) {
    if( _total_controls + 2 > MAX_CONTROLS
    ||  strlen(title) > MAX_TITLE_LEN )
@@ -185,11 +176,7 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
 /* :: addPlot( link, title, yrange ) */
 
 bool CommManager::addPlot(float* linker, const char* title,
-#if defined S302_UNO
                           float yrange_min, float yrange_max,
-#else
-                          std::initializer_list<float> yrange,
-#endif
                           uint8_t steps_displayed,
                           uint8_t tally,
                           uint8_t num_plots) {

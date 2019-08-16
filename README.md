@@ -26,8 +26,8 @@ float output;
 
 void setup() {
    /* Add modules */
-   cm.addSlider(&input, "Input", {0, 5}, 0.1); // ( on the Uno,
-   cm.addPlot(&output, "Output", {-1, 26});    //   remove these curly braces )
+   cm.addSlider(&input, "Input", 0, 5, 0.1);
+   cm.addPlot(&output, "Output", -1, 26);
 
    /* Ready to communicate over serial */
    cm.connect(&Serial, 115200);

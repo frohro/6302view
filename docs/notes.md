@@ -147,9 +147,9 @@ Attempting to add more controls or reporters when the respective maximum is met 
 
 ### Arduino Uno
 
-The Arduino Uno has remarkable limitations in comparison to the other microcontrollers supported in this project. Because of this, constraints are in place with respect to memory and syntax.
+The Arduino Uno has remarkable limitations in comparison to the other microcontrollers supported in this project. Because of this, constraints are in place with respect to memory.
 
-For the routines that add elements that require you to specify a range (namely, `addSlider`, `addJoystick`, and `addPlot`), curly braces (`initializer_list`s) should not be used to specify the ranges; in its place, give two arguments -- for the lower and the higher end of the range. For example:
+<!-- For the routines that add elements that require you to specify a range (namely, `addSlider`, `addJoystick`, and `addPlot`), curly braces (`initializer_list`s) should not be used to specify the ranges; in its place, give two arguments -- for the lower and the higher end of the range. For example:
 
 ```cpp
 // supported only on the Teensy, ESP8266, and ESP32:
@@ -161,7 +161,7 @@ cm.addSlider(&input, "Input", -5, 5, 0.1);
 cm.addPlot(&output, "Output", -1, 30);
 ```
 
-The curly braces are there as sugar to make your code a bit more human-readable. The intent is also to make it less difficult to remember the list of arguments of these routines. For instance, it's probably easier to recognize that `cm.addSlider(&x, "x", {0, 10}, 0.1);` creates a slider between 0 and 10 at a step size of 0.1 than it is to get the same idea from `cm.addSlider(&x, "x", 0, 10, 0.1);`, and it's probably easier to remember "link, name, range" than "link, name, low, high" for the `addPlot` routine after a long weekend.
+The curly braces are there as sugar to make your code a bit more human-readable. The intent is also to make it less difficult to remember the list of arguments of these routines. For instance, it's probably easier to recognize that `cm.addSlider(&x, "x", {0, 10}, 0.1);` creates a slider between 0 and 10 at a step size of 0.1 than it is to get the same idea from `cm.addSlider(&x, "x", 0, 10, 0.1);`, and it's probably easier to remember "link, name, range" than "link, name, low, high" for the `addPlot` routine after a long weekend. -->
 
 The Uno cannot natively format floats into strings or char arrays using `sprintf`. Instead, it uses `dtostrf`, which takes an argument specifying the number of digits after the decimal point to be printed. One may change the `MAX_PREC` definition in the `.h` to adjust this argument.
 

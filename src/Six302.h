@@ -115,23 +115,13 @@ class CommManager {
          bool* linker,
          const char* title);
 
-#if defined S302_UNO
       bool addSlider(
          float* linker,
          const char* title,
          float range_min, float range_max,
          float resolution,
          bool toggle=false);
-#else
-      bool addSlider(
-         float* linker,
-         const char* title,
-         std::initializer_list<float> range,
-         float resolution,
-         bool toggle=false);
-#endif
 
-#if defined S302_UNO
       bool addJoystick(
          float* linker_x,
          float* linker_y,
@@ -140,20 +130,9 @@ class CommManager {
          float yrange_min, float yrange_max,
          float resolution,
          bool sticky=true);
-#else
-      bool addJoystick(
-         float* linker_x,
-         float* linker_y,
-         const char* title,
-         std::initializer_list<float> xrange,
-         std::initializer_list<float> yrange,
-         float resolution,
-         bool sticky=true);
-#endif
 
       /* To add reporters: */
 
-#if defined S302_UNO
       bool addPlot(
          float* linker,
          const char* title,
@@ -161,15 +140,6 @@ class CommManager {
          uint8_t steps_displayed=10,
          uint8_t tally=1,
          uint8_t num_plots=1);
-#else
-      bool addPlot(
-         float* linker,
-         const char* title,
-         std::initializer_list<float> yrange,
-         uint8_t steps_displayed=10,
-         uint8_t tally=1,
-         uint8_t num_plots=1);
-#endif
 
       bool addNumber(
          int32_t* linker,
