@@ -190,7 +190,7 @@ bool CommManager::addPlot(float* linker, const char* title,
    _tallies[_total_reporters++] = tally;
 #if defined S302_UNO
    dtostrf(yrange_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "P\r%s\r", title, _tmp);
+   sprintf(_buf, "P\r%s\r%s\r", title, _tmp);
    strcat(_build_string, _buf);
    dtostrf(yrange_max, 0, MAX_PREC, _tmp);
    sprintf(_buf, "%s\r%d\r%d\r%d\r",
