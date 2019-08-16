@@ -59,7 +59,7 @@ using namespace std::placeholders;
 
          #define MAX_CONTROLS  5 // Joystick counts as two controls btw
          #define MAX_REPORTERS 5
-         #define MAX_TALLY     5
+         #define MAX_BURST     5
 
          #define MAX_TITLE_LEN 10
          #define MAX_DEBUG_LEN 500
@@ -72,7 +72,7 @@ using namespace std::placeholders;
 
          #define MAX_CONTROLS  20
          #define MAX_REPORTERS 10
-         #define MAX_TALLY     10
+         #define MAX_BURST     10
 
          #define MAX_TITLE_LEN 10
          #define MAX_DEBUG_LEN 1000
@@ -138,18 +138,18 @@ class CommManager {
          const char* title,
          float yrange_min, float yrange_max,
          uint8_t steps_displayed=10,
-         uint8_t tally=1,
+         uint8_t burst=1,
          uint8_t num_plots=1);
 
       bool addNumber(
          int32_t* linker,
          const char* title,
-         uint8_t tally=1);
+         uint8_t burst=1);
 
       bool addNumber(
          float* linker,
          const char* title,
-         uint8_t tally=1);
+         uint8_t burst=1);
 
       /* Tick */
 
@@ -181,10 +181,10 @@ class CommManager {
       char    _tmp[24]; // short general buffer
 #endif
 
-      /* Tally mechanic */
+      /* Burst mechanic */
 
-      uint8_t _recordings[MAX_REPORTERS][MAX_TALLY][4];
-      uint8_t _tallies[MAX_REPORTERS];
+      uint8_t _recordings[MAX_REPORTERS][MAX_BURST][4];
+      uint8_t _bursts[MAX_REPORTERS];
 
       /* Links */
 

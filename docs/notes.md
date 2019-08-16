@@ -132,7 +132,7 @@ This creates one control (a slider) and one reporter (a plot). The input is squa
 
 ### Quick table
 
-| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_TALLY` | `MAX_DEBUG_LEN` |
+| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_BURST` | `MAX_DEBUG_LEN` |
 | ---------------:|:--------------:|:---------------:|:-----------:|:---------------:|
 | Arduino Uno     | 5              | 5               | 5           | 500             |
 | Teensy          | 20             | 10              | 10          | 1000            |
@@ -141,7 +141,7 @@ This creates one control (a slider) and one reporter (a plot). The input is squa
 
 Attempting to add more controls or reporters when the respective maximum is met will not add more.
 
-`MAX_TALLY` sets the maximum number of data recordings, per reporter, per report period. See the (currently non-existent) section for more details.
+`MAX_BURST` sets the maximum number of data recordings, per reporter, per report period. See the (currently non-existent) section for more details.
 
 `MAX_DEBUG_LEN` sets the maximum amount of characters you are able to send per report period using the `debug` routine. If your debug messages are being cut off, either shorten your messages, send less of them per report period, or increase this constant.
 

@@ -178,28 +178,28 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
 bool CommManager::addPlot(float* linker, const char* title,
                           float yrange_min, float yrange_max,
                           uint8_t steps_displayed,
-                          uint8_t tally,
+                          uint8_t burst,
                           uint8_t num_plots) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LEN
-   ||  tally == 0
-   ||  tally > (float)_report_period / (float)_step_period )
+   ||  burst == 0
+   ||  burst > (float)_report_period / (float)_step_period )
       return false;
 
    _reporters[_total_reporters] = linker;
-   _tallies[_total_reporters++] = tally;
+   _bursts[_total_reporters++] = burst;
 #if defined S302_UNO
    dtostrf(yrange_min, 0, MAX_PREC, _tmp);
    sprintf(_buf, "P\r%s\r%s\r", title, _tmp);
    strcat(_build_string, _buf);
    dtostrf(yrange_max, 0, MAX_PREC, _tmp);
    sprintf(_buf, "%s\r%d\r%d\r%d\r",
-      _tmp, steps_displayed, tally, num_plots);
+      _tmp, steps_displayed, burst, num_plots);
    strcat(_build_string, _buf);
 #else
    sprintf(_buf, "P\r%s\r%f\r%f\r%d\r%d\r%d\r",
       title, yrange_min, yrange_max,
-      steps_displayed, tally, num_plots);
+      steps_displayed, burst, num_plots);
    strcat(_build_string, _buf);
 #endif
    
@@ -210,16 +210,16 @@ bool CommManager::addPlot(float* linker, const char* title,
 
 bool CommManager::addNumber(float* linker,
                             const char* title,
-                            uint8_t tally) {
+                            uint8_t burst) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LEN
-   ||  tally == 0
-   ||  tally > (float)_report_period / (float)_step_period )
+   ||  burst == 0
+   ||  burst > (float)_report_period / (float)_step_period )
       return false;
       
    _reporters[_total_reporters] = linker;
-   _tallies[_total_reporters++] = tally;
-   sprintf(_buf, "N\r%s\r%d\rfloat\r", title, tally);
+   _bursts[_total_reporters++] = burst;
+   sprintf(_buf, "N\r%s\r%d\rfloat\r", title, burst);
    strcat(_build_string, _buf);
    
    return true;
@@ -227,16 +227,16 @@ bool CommManager::addNumber(float* linker,
 
 bool CommManager::addNumber(int32_t* linker,
                             const char* title,
-                            uint8_t tally) {
+                            uint8_t burst) {
    if( _total_reporters >= MAX_REPORTERS
    ||  strlen(title) > MAX_TITLE_LEN
-   ||  tally == 0
-   ||  tally > (float)_report_period / (float)_step_period )
+   ||  burst == 0
+   ||  burst > (float)_report_period / (float)_step_period )
       return false;
 
    _reporters[_total_reporters] = (float*)linker;
-   _tallies[_total_reporters++] = tally;
-   sprintf(_buf, "N\r%s\r%d\rint\r", title, tally);
+   _bursts[_total_reporters++] = burst;
+   sprintf(_buf, "N\r%s\r%d\rint\r", title, burst);
    strcat(_build_string, _buf);
 
    return true;
@@ -357,14 +357,14 @@ void CommManager::_control() {
 /* :: _record( reporter ) */
 
 void CommManager::_record(uint8_t reporter) {
-   float tally;
+   float burst;
 #if defined TEENSYDUINO
-   tally = (float)_report_timer
+   burst = (float)_report_timer
 #else
-   tally = (float)(micros() - _report_timer)
+   burst = (float)(micros() - _report_timer)
 #endif
-       * (float)_tallies[reporter] / (float)_report_period;
-   uint8_t index = (int)tally; // round down to nearest index
+       * (float)_bursts[reporter] / (float)_report_period;
+   uint8_t index = (int)burst; // round down to nearest index
    memcpy(&_recordings[reporter][index], (char*)_reporters[reporter], 4);
 }
 
@@ -394,8 +394,8 @@ void CommManager::_report() {
    BROADCAST(_buf, 2);
    
    for( uint8_t reporter = 0; reporter < _total_reporters; reporter++ )
-      for( uint8_t tally = 0; tally < _tallies[reporter]; tally++ ) 
-         BROADCAST(_recordings[reporter][tally], 4);
+      for( uint8_t burst = 0; burst < _bursts[reporter]; burst++ ) 
+         BROADCAST(_recordings[reporter][burst], 4);
          
    BROADCAST("\n", 2);
 
