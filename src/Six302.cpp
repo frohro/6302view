@@ -124,7 +124,7 @@ bool CommManager::addSlider(float* linker, const char* title,
    strcat(_build_string, _buf);
 #else
    sprintf(_buf, "S\r%s\r%f\r%f\r%f\r%s\r",
-      title, *range.begin(), *(range.begin()+1),
+      title, range_min, range_max,
       resolution, toggle? "True":"False");
    strcat(_build_string, _buf);
 #endif
@@ -164,8 +164,8 @@ bool CommManager::addJoystick(float* linker_x, float* linker_y,
    strcat(_build_string, _buf);
 #else
    sprintf(_buf, "J\r%s\r%f\r%f\r%f\r%f\r%f\r%s\r",
-      title, *xrange.begin(), *(xrange.begin()+1),
-             *yrange.begin(), *(yrange.begin()+1),
+      title, xrange_min, xrange_max,
+             yrange_min, yrange_max,
       resolution, sticky? "True":"False");
    strcat(_build_string, _buf);
 #endif
@@ -198,7 +198,7 @@ bool CommManager::addPlot(float* linker, const char* title,
    strcat(_build_string, _buf);
 #else
    sprintf(_buf, "P\r%s\r%f\r%f\r%d\r%d\r%d\r",
-      title, *yrange.begin(), *(yrange.begin()+1),
+      title, yrange_min, yrange_max,
       steps_displayed, tally, num_plots);
    strcat(_build_string, _buf);
 #endif
