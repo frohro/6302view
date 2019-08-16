@@ -16,8 +16,8 @@ float output;
 
 void setup() {
    /* Add modules */
-   cm.addSlider(&input, "Input", {-5, 5}, 0.1);
-   cm.addPlot(&output, "Output", {-1, 30});
+   cm.addSlider(&input, "Input", -5, 5, 0.1);
+   cm.addPlot(&output, "Output", -1, 30);
 
    /* Ready to communicate over serial */
    cm.connect(&Serial, 115200);
@@ -25,5 +25,5 @@ void setup() {
 
 void loop() {
    output = input * input;
-   cm.step(); // This line isn't necessary if compiling on the ESP32!
+   cm.step();
 }

@@ -19,8 +19,8 @@ void setup() {
    while(!Serial);
    
    /* Add modules */
-   cm.addSlider(&input, "Input", {-5, 5}, 0.1);
-   cm.addPlot(&output, "Output", {-1, 30});
+   cm.addSlider(&input, "Input", -5, 5, 0.1);
+   cm.addPlot(&output, "Output", -1, 30);
 
    /* Ready to communicate over websockets */
    cm.connect("MY NETWORK", "MY PASSWORD");
@@ -28,5 +28,5 @@ void setup() {
 
 void loop() {
    output = input * input;
-   delay(1);
+   cm.step();
 }
