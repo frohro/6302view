@@ -495,6 +495,10 @@ void CommManager::debug(char* line) {
    // _debug_string will be sent at each report period
 }
 
+void CommManager::debug(String line) {
+   debug(line.toCharArray()); // 
+}
+
 void CommManager::_NOT_IMPLEMENTED_YET() {
 
    // I'm not ready yet

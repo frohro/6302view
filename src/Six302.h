@@ -162,7 +162,7 @@ class CommManager {
       /* Other */
       
       void debug(char*);
-      //void debug(String);
+      void debug(String);
       //void debug(bool);
       //void debug(int);
       //void debug(float);
