@@ -499,7 +499,7 @@ void CommManager::debug(String line) {
    int len = line.length()+5;
    line.toCharArray(_buf, len);
    debug(_buf); //
- }
+}
 
 void CommManager::_NOT_IMPLEMENTED_YET() {
 
