@@ -10,8 +10,8 @@
 CommManager::CommManager(uint32_t sp, uint32_t rp) {
    _step_period = sp;
    _report_period = rp;
-#if defined S302_WEBSOCKETS
-   _wss = WebSocketsServer(80);
+#ifdef S302_WEBSOCKETS
+   _wss = WebSocketsServer(S302_PORT);
 #endif
    strcpy(_build_string, "\fB");
    _debug_string[0] = '\0';
@@ -30,7 +30,9 @@ void CommManager::connect(HardwareSerial* s, uint32_t baud)
    _serial = s;
    _baud = baud;
    _serial->begin(baud);
-   while(!_serial); // does this even work?
+   while(!_serial);
+   // Serial tends to fill with garbage for the first half-second
+   delay(500);
    while( _serial->available() )
       _serial->read();
 #elif defined S302_WEBSOCKETS
@@ -45,7 +47,7 @@ void CommManager::connect(char* ssid, char* pw) {
    Serial.println(" connected!");
    // Print my IP!
    IPAddress ip = WiFi.localIP();
-   Serial.printf("--> %d.%d.%d.%d <--\n", ip[0], ip[1], ip[2], ip[3]);
+   Serial.printf("--> %d.%d.%d.%d:%d <--\n", ip[0], ip[1], ip[2], ip[3], S302_PORT);
    // Start the WebSocket server
    _wss.begin();
    _wss.onEvent(std::bind(&CommManager::_on_websocket_event, this, _1, _2, _3, _4));
@@ -249,7 +251,7 @@ void CommManager::step() {
 #else
 void CommManager::_step() {
 #endif
-   
+
    if( _total_reporters ) {
 
       if( _time_to_talk(_report_period) )
@@ -337,6 +339,8 @@ void CommManager::_control() {
 
       default: {
          // (update the value)
+         if( _buf[strlen(_buf)-1] != '\n' )
+            break; // only structured code allowed beyond this point
       
          int id = atoi(strtok(_buf, ":"));
          char val[24];
@@ -498,7 +502,7 @@ void CommManager::debug(char* line) {
 void CommManager::debug(String line) {
    int len = line.length()+5;
    line.toCharArray(_buf, len);
-   debug(_buf); //
+   debug(_buf);
 }
 
 void CommManager::_NOT_IMPLEMENTED_YET() {
