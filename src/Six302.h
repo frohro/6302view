@@ -30,7 +30,11 @@
 #include <string.h>
 
 #if defined S302_WEBSOCKETS
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#else
 #include <WiFi.h>
+#endif
 #include <WebSocketsServer.h>
 using namespace std::placeholders;
 #endif
@@ -204,7 +208,7 @@ class CommManager {
 #endif
       uint32_t _baud;
 #elif defined S302_WEBSOCKETS
-      WebSocketsServer _wss = WebSocketsServer(80);
+      WebSocketsServer _wss = WebSocketsServer(S302_PORT);
       void _on_websocket_event(
          uint8_t num, WStype_t type,
          uint8_t* payload, size_t length);

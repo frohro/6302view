@@ -457,13 +457,10 @@ void CommManager::_on_websocket_event(
       } break;
       case WStype_TEXT: {
          if( payload[0] == '\0' ) {
-            Serial.println("Received empty message!");
+            Serial.printf("[%u] Received empty message!\n", num);
          } else {
-            Serial.printf("[%u] Received:\n", num);
-            Serial.println("%%%%");
+            Serial.printf("[%u] Received: ", num);
             Serial.println((char*)payload);
-            Serial.println("%%%%");
-            Serial.printf("(Length: %d)\n", length);
             memcpy(_buf, payload, length);
             _buf[length] = '\0';
          }
