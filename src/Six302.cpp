@@ -496,7 +496,10 @@ void CommManager::debug(char* line) {
 }
 
 void CommManager::debug(String line) {
-   debug(line.toCharArray()); // 
+   int len = line.length()+5;
+   char temp[len] = "";
+   line.toCharArray(temp, len);
+   debug(temp); //
 }
 
 void CommManager::_NOT_IMPLEMENTED_YET() {
