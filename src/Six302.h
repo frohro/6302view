@@ -89,8 +89,8 @@ using namespace std::placeholders;
 #endif
 
 // (conservative calculations:)
-#define MAX_BUFFER_LEN (2+4*MAX_REPORTERS+1+1)
-#define MAX_BUILD_STRING_LEN (2+MAX_CONTROLS*(8+MAX_TITLE_LEN+3*24+5)+1)
+#define MAX_BUFFER_LEN (1+8+MAX_TITLE_LEN+24*5+5+1) // 145 last time checked
+#define MAX_BUILD_STRING_LEN (2+MAX_CONTROLS*(8+MAX_TITLE_LEN+3*24+5)+1) // 1903 last time checked
 
 /* Class definition! */
 
