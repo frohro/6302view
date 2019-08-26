@@ -17,8 +17,6 @@ float input;
 float output;
 
 void setup() {
-   Serial.begin(115200);
-   while(!Serial);
    
    /* Add modules */
    cm.addSlider(&input, "Left",   -1,   +1, 0.1, true); // true indicates toggle

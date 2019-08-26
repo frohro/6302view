@@ -17,8 +17,6 @@ bool input;
 int32_t output;
 
 void setup() {
-   Serial.begin(115200);
-   while(!Serial);
    
    /* Add modules */
    cm.addButton(&input, "Increment");

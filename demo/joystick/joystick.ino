@@ -23,8 +23,6 @@ float distance;
 float angle;
 
 void setup() {
-   Serial.begin(115200);
-   while(!Serial);
    
    /* Add modules */
    cm.addJoystick(&x, &y, "Vector", -1, +1, -1, +1, 0.1);
