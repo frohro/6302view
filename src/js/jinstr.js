@@ -55,17 +55,21 @@ var ws;
 
 var gui_land = document.getElementById("gui_land"); //where draggables end up!
 
-window.onfocus = function () { 
-  console.log("IN FOCUS");
-  isActive = true; 
-  document.body.style.background = "#eeeeee";
-}; 
+/* Problems may occur on some browsers/platforms when the window loses focus.
+   The following code warns users at the loss of focus.
+   Uncomment if you feel window focus does affect your JS. */
 
-window.onblur = function () { 
-  console.log("OUT OF FOCUS");
-  isActive = false; 
-  document.body.style.background = "red";
-};
+// window.onfocus = function () { 
+//   console.log("IN FOCUS");
+//   isActive = true; 
+//   document.body.style.background = "#eeeeee";
+// }; 
+
+// window.onblur = function () { 
+//   console.log("OUT OF FOCUS");
+//   isActive = false; 
+//   document.body.style.background = "red";
+// };
 
 window.onload = function(){
     console.log("here");

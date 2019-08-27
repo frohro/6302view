@@ -2,6 +2,8 @@
 
 A setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design).
 
+![Picture of system setup](https://i.imgur.com/qNrw34i.jpg "6302view with Teensy setup")
+
 ## Supported microcontrollers
 
 * Arduino Uno
