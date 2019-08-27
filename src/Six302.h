@@ -6,8 +6,8 @@
 
 /* CHOOSE ONE: */
 
-//#define S302_SERIAL
-#define S302_WEBSOCKETS
+#define S302_SERIAL
+//#define S302_WEBSOCKETS
 
 /* WebSockets options */
 
@@ -131,14 +131,14 @@ class CommManager {
          float resolution,
          bool toggle=false);
 
-      bool addJoystick(
-         float* linker_x,
-         float* linker_y,
-         const char* title,
-         float xrange_min, float xrange_max,
-         float yrange_min, float yrange_max,
-         float resolution,
-         bool sticky=true);
+//      bool addJoystick(
+//         float* linker_x,
+//         float* linker_y,
+//         const char* title,
+//         float xrange_min, float xrange_max,
+//         float yrange_min, float yrange_max,
+//         float resolution,
+//         bool sticky=true);
 
       /* To add reporters: */
 

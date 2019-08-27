@@ -134,46 +134,46 @@ bool CommManager::addSlider(float* linker, const char* title,
    return true;
 }
 
-/* :: addJoystick( link, link, title, xrange, yrange, resolution ) */
-
-bool CommManager::addJoystick(float* linker_x, float* linker_y,
-                              const char* title,
-                              float xrange_min, float xrange_max,
-                              float yrange_min, float yrange_max,
-                              float resolution, bool sticky) {
-   if( _total_controls + 2 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LEN )
-      return false;
-      
-   _controls[_total_controls++] = linker_x;
-   _controls[_total_controls++] = linker_y;
-#if defined S302_UNO
-   dtostrf(xrange_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "J\r%s\r%s\r", title, _tmp);
-   strcat(_build_string, _buf);
-   dtostrf(xrange_max, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "%s\r", _tmp);
-   strcat(_build_string, _buf);
-   dtostrf(yrange_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "%s\r", _tmp);
-   strcat(_build_string, _buf);
-   dtostrf(yrange_max, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "%s\r", _tmp);
-   strcat(_build_string, _buf);
-   dtostrf(resolution, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "%s\r%s\r",
-      _tmp, sticky? "True":"False");
-   strcat(_build_string, _buf);
-#else
-   sprintf(_buf, "J\r%s\r%f\r%f\r%f\r%f\r%f\r%s\r",
-      title, xrange_min, xrange_max,
-             yrange_min, yrange_max,
-      resolution, sticky? "True":"False");
-   strcat(_build_string, _buf);
-#endif
-   
-   return true;
-}
+///* :: addJoystick( link, link, title, xrange, yrange, resolution ) */
+//
+//bool CommManager::addJoystick(float* linker_x, float* linker_y,
+//                              const char* title,
+//                              float xrange_min, float xrange_max,
+//                              float yrange_min, float yrange_max,
+//                              float resolution, bool sticky) {
+//   if( _total_controls + 2 > MAX_CONTROLS
+//   ||  strlen(title) > MAX_TITLE_LEN )
+//      return false;
+//      
+//   _controls[_total_controls++] = linker_x;
+//   _controls[_total_controls++] = linker_y;
+//#if defined S302_UNO
+//   dtostrf(xrange_min, 0, MAX_PREC, _tmp);
+//   sprintf(_buf, "J\r%s\r%s\r", title, _tmp);
+//   strcat(_build_string, _buf);
+//   dtostrf(xrange_max, 0, MAX_PREC, _tmp);
+//   sprintf(_buf, "%s\r", _tmp);
+//   strcat(_build_string, _buf);
+//   dtostrf(yrange_min, 0, MAX_PREC, _tmp);
+//   sprintf(_buf, "%s\r", _tmp);
+//   strcat(_build_string, _buf);
+//   dtostrf(yrange_max, 0, MAX_PREC, _tmp);
+//   sprintf(_buf, "%s\r", _tmp);
+//   strcat(_build_string, _buf);
+//   dtostrf(resolution, 0, MAX_PREC, _tmp);
+//   sprintf(_buf, "%s\r%s\r",
+//      _tmp, sticky? "True":"False");
+//   strcat(_build_string, _buf);
+//#else
+//   sprintf(_buf, "J\r%s\r%f\r%f\r%f\r%f\r%f\r%s\r",
+//      title, xrange_min, xrange_max,
+//             yrange_min, yrange_max,
+//      resolution, sticky? "True":"False");
+//   strcat(_build_string, _buf);
+//#endif
+//   
+//   return true;
+//}
 
 /* :: addPlot( link, title, yrange ) */
 
@@ -311,10 +311,12 @@ void CommManager::_control() {
    if( !_serial->available() )
       return;
    uint8_t i = 0;
-   while( _serial->available() ) {
-      _buf[i] = (char)(_serial->read());
-      if( _buf[i++] == '\n' ) // EOM
-         break;
+   for(;;) {
+      if( _serial->available() ) {
+         _buf[i] = (char)(_serial->read());
+         if( _buf[i++] == '\n' )
+            break; // we need a newline
+      }
    }
    _buf[i] = '\0';
 #elif defined S302_WEBSOCKETS
@@ -344,10 +346,10 @@ void CommManager::_control() {
       
          int id = atoi(strtok(_buf, ":"));
          char val[24];
-         strcpy(val, strtok(NULL, ":"));
-         if( !strcmp(val, "true") ) { // booly boi
+         strcpy(val, strtok(NULL, "\n"));
+         if( !strcmp(val, "true") ) {
             *(bool*)_controls[id] = true;
-         } else if ( !strcmp(val, "false") ) { // also bool
+         } else if ( !strcmp(val, "false") ) {
             *(bool*)_controls[id] = false;
          } else { // float
             *_controls[id] = atof(val);
