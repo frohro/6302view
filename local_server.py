@@ -7,6 +7,8 @@ import serial
 import sys
 from time import sleep
 
+DEBUG = False
+
 '''Automatically find USB Serial Port
 jodalyst 9/2017
 '''
@@ -130,7 +132,10 @@ async def send_down(message):
     if not serial_connected:
         await connect_serial()
     try:
-        ser.write(message.encode('ascii'))
+        msg = message.encode('ascii')
+        ser.write(msg)
+        if DEBUG:
+            print("▼", msg)
     except Exception as e:
         print("failing on write")
         ser.close()
@@ -157,8 +162,8 @@ async def uplink(websocket):
             serial_connected = False
 
         try:
-            # if data != b'':
-            #     print(data)
+            if DEBUG and data != b'':
+                print("▲", data)
             await websocket.send(data)
         except Exception as e:
             #print(e)
