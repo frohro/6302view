@@ -5,11 +5,17 @@ Diagrams to be added. This page to be prettified.
 ## Table of contents
 
 * [Set-up](#set-up)
+  * [GUI](#gui)
   * [Serial](#serial)
   * [WebSockets](#websockets)
   * [Adding modules](#adding-modules)
     * [Controls](#controls)
+      * [Toggles](#toggles)
+      * [Buttons](#buttons)
+      * [Sliders](#sliders)
     * [Reporters](#reporters)
+      * [Plots](#plots)
+      * [Numerical reporters](#numerical-reporters)
   * [`cm.step`](#cmstep)
   * [For example](#for-example)
 * [Microcontroller differences](#microcontroller-differences)
@@ -35,21 +41,33 @@ Start off including the library and creating an instance of the `CommManager` cl
 CommManager cm(1000, 5000);
 ```
 
-The numbers control the rate at which the system operates. `1000` is the time in microseconds between loops (step period), and `5000` is the time in microseconds between each *report* (report period).
+The numbers control the rate at which the system operates. `1000` is the time in microseconds between loops (step period), and `5000` is the time in microseconds between each *report* (report period). I find cm(5000, 50000) is fine enough, though adjust it to your needs.
+
+### GUI
+
+The blank GUI page looks like this:
+
+![(image of blank gui)](https://i.imgur.com/TJKfr3J.png)
 
 There are, so far, two modes of communication between the GUI and the microcontroller. Data can be communicated over **Serial**, or by **WebSockets**.
 
 ### Serial
 
-This is default. To connect, enter a Serial pointer and BAUD rate:
+This is default communication mode. To connect, enter a Serial pointer and BAUD rate:
 
 ```cpp
 cm.connect(&Serial, 115200);
 ```
 
+When you've uploaded your code, run `local_server.py`. It broadcasts your microcontroller's Serial to your localhost (`127.0.0.1`) via WebSockets, making the GUI work. The Python script uses the `websockets` and `pyserial` modules.
+
+![(image of local_server.py in console)](https://i.imgur.com/1DN47zF.png)
+
 ### WebSockets
 
-This is not the default. Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode. This method can only work on the ESP8266 or ESP32. To connect, enter your SSID and p/w:
+This is not the default. Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode. This method can only work on the ESP8266 or ESP32. Make sure you have the `WebSockets` library installed (`Manage libraries...` > Search for and install [`WebSockets`](https://github.com/Links2004/arduinoWebSockets) published by Markus Sattler).
+
+To connect, enter your SSID and p/w:
 
 ```cpp
 cm.connect("Mom use this one", "password");
@@ -59,34 +77,115 @@ The Serial monitor will display the local IP address of your microcontroller tha
 
 ```plaintext
 Connecting to Mom use this one WiFi .. connected!
---> 10.0.0.18 <--
+--> 10.0.0.18:80 <--
 ```
+
+In this example, in the GUI, you would use `10.0.0.18` for the Local IP and `80` for the Port.
 
 ### Adding modules
 
 To add controls and reporters, use the following `CommManager` routines.
 
-<!--Pictures to be added.-->
+In general, the order of arguments is:
+
+* A pointer to the variable
+* A title or name for the module
+* ... followed by other, potentially optional args.
+
+Check the following sections or the header file for what arguments these take specifically.
 
 #### Controls
 
-* Add a toggle module with `addToggle`
-* Add a button module with `addButton`
-* Add a slider module with `addSlider`
-* Add a joystick module with `addJoystick`
+There are currently three fully-functioning control modules.
+
+##### Toggles
+
+Add a toggle module with `addToggle`.
+
+It takes only a `bool` pointer and a title.
+
+```cpp
+// Example toggle
+cm.addButton(&toggle, "Toggle");
+```
+
+<p align="center">
+  <img alt="(toggle)" src="https://i.imgur.com/q1dpjXH.png">
+</p>
+
+##### Buttons
+
+Add a button module with `addButton`.
+
+It takes only a `bool` pointer and a title.
+
+```cpp
+// Example button
+cm.addButton(&button, "Button");
+```
+
+<p align="center">
+  <img alt="(button)" src="https://i.imgur.com/DFuQadR.png">
+</p>
+
+##### Sliders
+
+Add a slider module with `addSlider`.
+
+It takes a pointer to a `float`, a title, followed by the lower end of the range, the higher end of the range, the resolution, all three being `float`s.
+
+```cpp
+// Example slider
+cm.addButton(&input, "Slider", -20, 20, 0.01);
+```
+
+<p align="center">
+  <img alt="(slider)" src="https://i.imgur.com/KPHizUg.png">
+</p>
+
+An optional sixth parameter controls whether you'd like the slider to toggle between two numbers like in the image below. (Default is `false`.)
+
+```cpp
+// Example alternating slider
+cm.addButton(&input, "Slider", -20, 20, 0.01, true);
+```
+
+<p align="center">
+  <img alt="(slider with toggle)" src="https://i.imgur.com/kweSfs4.gif">
+</p>
 
 #### Reporters
 
-* Add a plot module with `addPlot`
-* Add a plain number module with `addNumber`
+There is currently one ready-to-use reporting module.
 
-In general, the arguments these take are:
+##### Plots
 
-* `pointer`
-* `title`
-* followed by other, potentially optional args.
+Add a plot module with `addPlot`.
 
-I will add comprehensive examples later in development. For the time being, check the header file for what arguments these take specifically.
+It takes a pointer to a `float`, a title, followed by the lower end of y-range and the upper end of the y-range.
+
+```cpp
+// Example plot
+cm.addPlot(&output, "Plot", -1.1, 1.1);
+```
+
+<p align="center">
+  <img alt="(plot)" src="https://i.imgur.com/ZPP8szI.png">
+</p>
+
+There are three optional parameters for plots.
+
+The first changes the number of ticks displayed (default `10`).
+
+The second changes how many data points to send up per report (default `1`). This is useful is you would like to record at a high frequency while at the same time to send up a report just occasionally.
+
+(The third is under development...)
+
+##### Numerical reporters
+
+Add a plain number module with `addNumber`.
+
+(Under development!)
 
 ### `cm.step`
 
