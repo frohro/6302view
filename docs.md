@@ -1,7 +1,5 @@
 # 6302view
 
-Diagrams to be added. This page to be prettified.
-
 ## Table of contents
 
 * [Set-up](#set-up)
@@ -165,8 +163,24 @@ Add a plot module with `addPlot`.
 It takes a pointer to a `float`, a title, followed by the lower end of y-range and the upper end of the y-range.
 
 ```cpp
-// Example plot
-cm.addPlot(&output, "Plot", -1.1, 1.1);
+#include <Six302.h>
+#include <math.h>
+
+CommManager cm(5000, 50000);
+
+float t, output;
+
+void setup() {
+   // Example plot
+   cm.addPlot(&output, "Plot", -1.1, 1.1);
+   // Connect via serial
+   cm.connect(&Serial, 115200);
+}
+
+void loop() {
+   output = sin(t = t + 0.02);
+   cm.step();
+}
 ```
 
 <p align="center">
@@ -209,8 +223,8 @@ float input, output;
 
 void setup() {
    // Add modules
-   cm.addSlider(&input, "Input", {-5, 5}, 0.01);
-   cm.addPlot(&output, "Output", {-1, 30});
+   cm.addSlider(&input, "Input", -5, 5, 0.01);
+   cm.addPlot(&output, "Output", -1, 30);
    // Connect via serial
    cm.connect(&Serial, 115200);
 }
@@ -222,8 +236,6 @@ void loop() {
 ```
 
 This creates one control (a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 down to 0 up to 25.
-
-(Pictures to be added.)
 
 ## Microcontroller differences
 
@@ -329,7 +341,7 @@ Therefore, from the GUI perspective, messages coming in starting with `\fR` will
 
 When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Debug messages start with `\fD`, then with four bytes representing the lowest headroom over the last report period as a `float`, follows with the user's actual message, and terminates by `\n`. Multiple lines in one debug message are separated by `\r`. The debug string is sent once per report period.
 
-(Currently only `char` arrays are supported.)
+(Currently only `char` arrays and `Sting`s are supported.)
 
 (Picture to be added.)
 

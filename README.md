@@ -18,7 +18,7 @@ A setup that allows researchers and learners to interact directly with their mic
 #include <Six302.h>
 
 // microseconds
-#define STEP_TIME 10000
+#define STEP_TIME 5000
 #define REPORT_TIME 50000
 
 CommManager cm(STEP_TIME, REPORT_TIME);
@@ -28,7 +28,7 @@ float output;
 
 void setup() {
    /* Add modules */
-   cm.addSlider(&input, "Input", 0, 5, 0.1);
+   cm.addSlider(&input, "Input", 0, 5, 0.01);
    cm.addPlot(&output, "Output", -1, 26);
 
    /* Ready to communicate over serial */
@@ -45,7 +45,7 @@ The above creates a **slider** called "Input" from 0 to 5 (at a step size of 0.1
 
 ![(gif of resulting modules)](https://i.imgur.com/THO1Me1.gif)
 
-The system loops at once per 10000 µs (10 ms), and data is reported once per 50000 µs (50 ms). The system uses the Serial port to communicate with the webpage.
+The system loops at once per 5000 µs (5 ms), and data is reported once per 50000 µs (50 ms).
 
 ## Goals
 
