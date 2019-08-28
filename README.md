@@ -1,15 +1,18 @@
 # 6302view
 
-A setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design).
+A setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design). This software lets the user control and observe their microcontroller in real-time.
 
-![Picture of system setup](https://i.imgur.com/qNrw34i.jpg "6302view with Teensy setup")
+<!-- The image below links to a video demonstration.
+
+[![(system setup)](https://i.imgur.com/qNrw34i.jpg "6302view with Teensy setup")](https://www.youtube.com/watch?v=AaNXcUNaw-I)
+-->
 
 ## Supported microcontrollers
 
-* Arduino Uno
 * Teensy
 * ESP8266
 * ESP32
+* Arduino Uno
 
 ## Quick example
 
