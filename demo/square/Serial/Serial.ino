@@ -3,7 +3,7 @@
    is chosen in the library. This demo should compile on the Teensy,
    ESP32, and ESP8266. */
 
-#include "Six302.h"
+#include <Six302.h>
 
 // microseconds
 #define STEP_TIME 100000

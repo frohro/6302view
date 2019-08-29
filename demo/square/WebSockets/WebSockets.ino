@@ -1,5 +1,5 @@
 
-#include "Six302.h"
+#include <Six302.h>
 
 /* For this demo, make sure to have the `#define S302_WEBSOCKETS`
    macro enabled in the library, and to use either an ESP32 or

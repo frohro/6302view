@@ -191,7 +191,7 @@ There are three optional parameters for plots.
 
 The first changes the number of ticks displayed (default `10`).
 
-The second changes how many data points to send up per report (default `1`). This is useful is you would like to record at a high frequency while at the same time to send up a report just occasionally.
+The second changes how many data points to send up per report (default `1`). This is useful is you would like to record at a high frequency, while at the same time, to send up a report less occasionally. The recorded data points are as evenly spaced out as possible, step period permitting. This parameter should not be greater than the ratio of the report period to the step period.
 
 (The third is under development...)
 
@@ -327,15 +327,15 @@ For example, the build string for the quick example above (the one that adds a s
 \fBS\rInput\r-5.000000\r5.000000\r0.100000\rFalse\rP\rOutput\r-1.000000\r30.000000\r10\r1\r\n
 ```
 
-(Picture to be added.)
-
 <!--(Sadly, the carriage return is not rendered as a new line in the serial monitor (Arduino IDE 1.8.9 on Windows 10).)-->
 
 #### How the data are reported
 
 Report messages take the form of `\fR` followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value, closing with `\n`. The bytes are sent in the order they were added in setup, which is precisely the order as they appear in the build string.
 
-Therefore, from the GUI perspective, messages coming in starting with `\fR` will have `4 * _total_reporters` bytes follow, then the closing `\n`.
+Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least\* `4 * _total_reporters` bytes follow, then the closing `\n`.
+
+\* more than, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
 
 #### How debug messages are sent
 

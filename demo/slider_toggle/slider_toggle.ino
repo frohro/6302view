@@ -1,5 +1,5 @@
 
-#include "Six302.h"
+#include <Six302.h>
 
 /* For this demo, make sure to have the `#define S302_SERIAL`
    macro enabled in the library. 

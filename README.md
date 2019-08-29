@@ -1,15 +1,17 @@
 # 6302view
 
-A setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design). This software lets the user control and observe their microcontroller in real-time.
+A setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design). This software lets the user control and observe their microcontroller's variables in real-time.
 
 [![(system setup)](https://i.imgur.com/djGt0lU.jpg "6302view with Teensy setup")](https://www.youtube.com/watch?v=AaNXcUNaw-I)
 
+Click the image above for a video demonstration.
+
 ## Supported microcontrollers
 
-* Teensy
-* ESP8266
-* ESP32
-* Arduino Uno
+* [Teensy](https://www.pjrc.com/teensy/)
+* [ESP8266](https://en.wikipedia.org/wiki/ESP8266)
+* [ESP32](https://www.espressif.com/en/products/hardware/esp32/overview)
+* [Arduino Uno](https://www.arduino.cc/en/guide/BoardAnatomy)
 
 ## Quick example
 
@@ -41,7 +43,7 @@ void loop() {
 }
 ```
 
-The above creates a **slider** called "Input" from 0 to 5 (at a step size of 0.1) and a **plot** called "Output" from -1 to 26, illustrating the square of the slider input:
+The above creates a **Slider** called "Input" from 0 to 5 (at a step size of 0.01) and a **Plot** called "Output" from -1 to 26, illustrating the square of the slider input:
 
 ![(gif of resulting modules)](https://i.imgur.com/THO1Me1.gif)
 

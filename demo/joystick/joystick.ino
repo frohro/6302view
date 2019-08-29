@@ -1,5 +1,5 @@
 
-#include "Six302.h"
+#include <Six302.h>
 #include <math.h>
 
 #define TAU (2*PI)
