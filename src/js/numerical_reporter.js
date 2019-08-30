@@ -9,6 +9,7 @@ function Numerical_Reporter(unique,title,data_type,color=null,bg_color=null){
     var unique = unique; //unique identifying number
 
     var format = function(value){
+        //console.log(data_type);
         if (data_type==="float"){
             return value;
         } else{

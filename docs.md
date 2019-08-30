@@ -2,6 +2,9 @@
 
 ## Table of contents
 
+I've structured this page roughly in order of increasing detail.
+
+* [Example](#example)
 * [Set-up](#set-up)
   * [GUI](#gui)
   * [Serial](#serial)
@@ -15,19 +18,62 @@
       * [Plots](#plots)
       * [Numerical reporters](#numerical-reporters)
   * [`cm.step`](#cmstep)
-  * [For example](#for-example)
+* [How the information is communicated](#how-the-information-is-communicated)
+  * [GUI → Microcontroller](#gui--microcontroller)
+  * [Microcontroller → GUI](#microcontroller--gui)
+    * [How build instructions are sent](#how-build-instructions-are-sent)
+    * [How the data are reported](#how-the-data-are-reported)
+    * [How debug messages are sent](#how-debug-messages-are-sent)
 * [Microcontroller differences](#microcontroller-differences)
   * [Quick table](#quick-table)
   * [Arduino Uno](#arduino-uno)
   * [Teensy](#teensy)
   * [ESP8266](#esp8266)
   * [ESP32](#esp32)
-* [How the information is communicated (the details)](#how-the-information-is-communicated-the-details)
-  * [GUI → Microcontroller](#gui--microcontroller)
-  * [Microcontroller → GUI](#microcontroller--gui)
-    * [How build instructions are sent](#how-build-instructions-are-sent)
-    * [How the data are reported](#how-the-data-are-reported)
-    * [How debug messages are sent](#how-debug-messages-are-sent)
+
+## Example
+
+```cpp
+#include <Six302.h>
+
+CommManager cm(5000, 50000);
+
+// controls
+bool tgl;
+float input;
+
+// reporters
+float output;
+
+void setup() {
+   // initialize values
+   tgl = true;
+
+   // Add modules
+   cm.addToggle(&tgl, "Add ten");
+   cm.addSlider(&input, "Input", -5, 5, 0.01);
+
+   cm.addPlot(&output, "Output", 0, 35);
+
+   // Connect via serial
+   cm.connect(&Serial, 115200);
+}
+
+void loop() {
+
+   output = input * input;
+   if( tgl )
+      output += 10;
+
+   cm.step();
+}
+```
+
+This `.ino` creates two controls (a toggle and a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 down to 0 up to 25, plus ten if the toggle is switched on.
+
+![(image of example)](https://i.imgur.com/6IyXB53.png)
+
+Above is what the example renders to in the GUI, with the slider modified and the toggle switched off less than a second beforehand.
 
 ## Set-up
 
@@ -199,7 +245,20 @@ The second changes how many data points to send up per report (default `1`). Thi
 
 Add a plain number module with `addNumber`.
 
-(Under development!)
+It first takes a pointer to either a real number (`float`) or a 32-bit integer (`int32_t`/`long int`), and ends with a title.
+
+```cpp
+// Example number reporters
+cm.addNumber(&i, "Count");
+cm.addNumber(&t, "temperature");
+```
+
+
+
+
+(to be added)
+
+
 
 ### `cm.step`
 
@@ -212,94 +271,7 @@ void loop() {
 }
 ```
 
-## For example
-
-```cpp
-#include <Six302.h>
-
-CommManager cm(5000, 50000);
-
-// controls
-bool tgl;
-float input;
-
-// reporters
-float output;
-
-void setup() {
-   // initialize values
-   tgl = true;
-
-   // Add modules
-   cm.addToggle(&tgl, "Add ten");
-   cm.addSlider(&input, "Input", -5, 5, 0.01);
-
-   cm.addPlot(&output, "Output", 0, 35);
-
-   // Connect via serial
-   cm.connect(&Serial, 115200);
-}
-
-void loop() {
-
-   output = input * input;
-   if( tgl )
-      output += 10;
-
-   cm.step();
-}
-```
-
-This creates two controls (a toggle and a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 down to 0 up to 25, plus ten if the toggle is switched on.
-
-![(image of example)](https://i.imgur.com/6IyXB53.png)
-
-Above is what the example renders to in the GUI, with the toggle switched off less than a second beforehand.
-
-## Microcontroller differences
-
-(In rough order of least capability to most capability.)
-
-### Quick table
-
-| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_BURST` | `MAX_DEBUG_LEN` | `MAX_TITLE_LEN` |
-| ---------------:|:--------------:|:---------------:|:-----------:|:---------------:|:---------------:|
-| Arduino Uno     | 5              | 5               | 5           | 500             | 20              |
-| Teensy          | 20             | 10              | 10          | 1000            | 30              |
-| ESP8266         | 20             | 10              | 10          | 1000            | 30              |
-| ESP32           | 20             | 10              | 10          | 1000            | 30              |
-
-Attempting to add more controls or reporters when the respective maximum is met will not add more.
-
-`MAX_BURST` sets the maximum number of data recordings, per reporter, per report period. See the (currently non-existent) section for more details.
-
-`MAX_DEBUG_LEN` sets the maximum amount of characters you are able to send per report period using the `debug` routine. If your debug messages are being cut off, either shorten your messages, send less of them per report period, or increase this constant.
-
-`MAX_TITLE_LEN` sets the maximum length of titles. Long titles are truncated in the [build string](#how-build-instructions-are-sent).
-
-### Arduino Uno
-
-The Arduino Uno has remarkable limitations in comparison to the other microcontrollers supported in this project. Because of this, constraints are in place with respect to memory.
-
-The Uno cannot natively format floats into strings or char arrays using `sprintf`. Instead, it uses `dtostrf`, which takes an argument specifying the number of digits after the decimal point to be printed. One may change the `MAX_PREC` definition in the `.h` to adjust this argument.
-
-The Uno cannot communicate over WebSockets.
-
-### Teensy
-
-For the Teensy, ESP8266, and ESP32, curly braces are expected to denote ranges when adding elements. The Teensy can only communicate over Serial, like the Uno.
-
-### ESP8266
-
-The ESP8266 is practically the same as the Teensy, except it supports communication over WebSockets.
-
-### ESP32
-
-Because the ESP32 has a second core, it is desirable to run the `CommManager` over there, rather than on the primary core, to open up headroom. `cm.step` in your `loop` routine will still work; however, it's only sugar offering timing control. `cm.headroom()` returns the headroom for your `loop` routine because it is likely to be more useful than the headroom for the task running on the second core, which is generally constant around six microseconds off of the step period.
-
-The ESP32 also supports communication over WebSockets.
-
-## How the information is communicated (the details)
+## How the information is communicated
 
 ### GUI → Microcontroller
 
@@ -358,5 +330,47 @@ When using a serial communication setup, the intended way to write debug message
 
 (Currently only `char` arrays and `Sting`s are supported.)
 
-(Picture to be added.)
+(Picture to be added once implemented.)
 
+## Microcontroller differences
+
+(In rough order of least capability to most capability.)
+
+### Quick table
+
+| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_BURST` | `MAX_DEBUG_LEN` | `MAX_TITLE_LEN` |
+| ---------------:|:--------------:|:---------------:|:-----------:|:---------------:|:---------------:|
+| Arduino Uno     | 5              | 5               | 5           | 500             | 20              |
+| Teensy          | 20             | 10              | 10          | 1000            | 30              |
+| ESP8266         | 20             | 10              | 10          | 1000            | 30              |
+| ESP32           | 20             | 10              | 10          | 1000            | 30              |
+
+Attempting to add more controls or reporters when the respective maximum is met will not add more.
+
+`MAX_BURST` sets the maximum number of data recordings, per reporter, per report period. See [#Plots](#plots) for more details.
+
+`MAX_DEBUG_LEN` sets the maximum amount of characters you are able to send per report period using the `debug` routine. If your debug messages are being cut off, either shorten your messages, send less of them per report period, or increase this constant.
+
+`MAX_TITLE_LEN` sets the maximum length of titles. Long titles are truncated in the [build string](#how-build-instructions-are-sent).
+
+### Arduino Uno
+
+The Arduino Uno has remarkable limitations in comparison to the other microcontrollers supported in this project. Because of this, constraints are in place with respect to memory.
+
+The Uno cannot natively format floats into strings or char arrays using `sprintf`. Instead, it uses `dtostrf`, which takes an argument specifying the number of digits after the decimal point to be printed. One may change the `MAX_PREC` definition in the `.h` to adjust this argument.
+
+The Uno cannot communicate over WebSockets.
+
+### Teensy
+
+For the Teensy, ESP8266, and ESP32, curly braces are expected to denote ranges when adding elements. The Teensy can only communicate over Serial, like the Uno.
+
+### ESP8266
+
+The ESP8266 is practically the same as the Teensy, except it supports communication over WebSockets.
+
+### ESP32
+
+Because the ESP32 has a second core, it is desirable to run the `CommManager` over there, rather than on the primary core, to open up headroom. `cm.step` in your `loop` routine will still work; however, it's only sugar offering timing control. `cm.headroom()` returns the headroom for your `loop` routine because it is likely to be more useful than the headroom for the task running on the second core, which is generally constant around six microseconds off of the step period.
+
+The ESP32 also supports communication over WebSockets.
