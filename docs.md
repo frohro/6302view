@@ -304,7 +304,7 @@ Each module, as well as the arguments of each module, are separated by `\r`.
 
 Following the modules is a list of the current values of the controls, denoted by the `#` symbol. Each value is followed by `\r`. This list ends with the finalizing `\n`.
 
-For example, the build string for [the code above](#for-example) (the one that adds a toggle, slider, and plot) is:
+For example, the build string for [the code above](#for-example) (the one that adds a toggle, slider, and plot), at initialization, is:
 
 ```plaintext
 \fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#true\r0.000000\r\n
@@ -328,9 +328,11 @@ Therefore, from the GUI perspective, messages coming in starting with `\fR` will
 
 When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Debug messages start with `\fD`, then with four bytes representing the lowest headroom over the last report period as a `float`, follows with the user's actual message, and terminates by `\n`. Multiple lines in one debug message are separated by `\r`. The debug string is sent once per report period.
 
-(Currently only `char` arrays and `Sting`s are supported.)
+(Currently only `char` arrays and `String`s are supported.)
 
 (Picture to be added once implemented.)
+
+(This feature currently operates in the browser's console log rather than something more explicit on the webpage itself.)
 
 ## Microcontroller differences
 
