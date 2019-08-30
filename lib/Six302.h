@@ -70,7 +70,7 @@ using namespace std::placeholders;
          #define MAX_REPORTERS 5
          #define MAX_BURST     5
 
-         #define MAX_TITLE_LEN 10
+         #define MAX_TITLE_LEN 20
          #define MAX_DEBUG_LEN 500
 
          #define MAX_PREC      7
@@ -83,7 +83,7 @@ using namespace std::placeholders;
          #define MAX_REPORTERS 10
          #define MAX_BURST     10
 
-         #define MAX_TITLE_LEN 10
+         #define MAX_TITLE_LEN 30
          #define MAX_DEBUG_LEN 1000
 
 #endif

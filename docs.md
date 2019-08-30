@@ -243,18 +243,20 @@ This creates one control (a slider) and one reporter (a plot). The input is squa
 
 ### Quick table
 
-| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_BURST` | `MAX_DEBUG_LEN` |
-| ---------------:|:--------------:|:---------------:|:-----------:|:---------------:|
-| Arduino Uno     | 5              | 5               | 5           | 500             |
-| Teensy          | 20             | 10              | 10          | 1000            |
-| ESP8266         | 20             | 10              | 10          | 1000            |
-| ESP32           | 20             | 10              | 10          | 1000            |
+| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_BURST` | `MAX_DEBUG_LEN` | `MAX_TITLE_LEN` |
+| ---------------:|:--------------:|:---------------:|:-----------:|:---------------:|:---------------:|
+| Arduino Uno     | 5              | 5               | 5           | 500             | 20              |
+| Teensy          | 20             | 10              | 10          | 1000            | 30              |
+| ESP8266         | 20             | 10              | 10          | 1000            | 30              |
+| ESP32           | 20             | 10              | 10          | 1000            | 30              |
 
 Attempting to add more controls or reporters when the respective maximum is met will not add more.
 
 `MAX_BURST` sets the maximum number of data recordings, per reporter, per report period. See the (currently non-existent) section for more details.
 
 `MAX_DEBUG_LEN` sets the maximum amount of characters you are able to send per report period using the `debug` routine. If your debug messages are being cut off, either shorten your messages, send less of them per report period, or increase this constant.
+
+`MAX_TITLE_LEN` sets the maximum length of titles. Long titles are truncated in the [build string](#how-build-instructions-are-sent).
 
 ### Arduino Uno
 

@@ -79,12 +79,11 @@ void CommManager::connect(char* ssid, char* pw) {
 /* :: addToggle( link, title ) */
 
 bool CommManager::addToggle(bool* linker, const char* title) {
-   if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LEN )
+   if( _total_controls + 1 > MAX_CONTROLS )
       return false;
       
    _controls[_total_controls++] = (float*)linker;
-   sprintf(_buf, "T\r%s\r", title);
+   sprintf(_buf, "T\r%.*s\r", MAX_TITLE_LEN, title);
    strcat(_build_string, _buf);
    
    return true;
@@ -93,12 +92,11 @@ bool CommManager::addToggle(bool* linker, const char* title) {
 /* :: addButton( link, title ) */
 
 bool CommManager::addButton(bool* linker, const char* title) {
-   if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LEN )
+   if( _total_controls + 1 > MAX_CONTROLS )
       return false;
       
    _controls[_total_controls++] = (float*)linker;
-   sprintf(_buf, "B\r%s\r", title);
+   sprintf(_buf, "B\r%.*s\r", MAX_TITLE_LEN, title);
    strcat(_build_string, _buf);
    
    return true;
@@ -109,14 +107,13 @@ bool CommManager::addButton(bool* linker, const char* title) {
 bool CommManager::addSlider(float* linker, const char* title,
                             float range_min, float range_max,
                             float resolution, bool toggle) {
-   if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LEN )
+   if( _total_controls + 1 > MAX_CONTROLS )
       return false;
 
    _controls[_total_controls++] = linker;
 #if defined S302_UNO
    dtostrf(range_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "S\r%s\r%s\r", title, _tmp);
+   sprintf(_buf, "S\r%.*s\r%s\r", MAX_TITLE_LEN, title, _tmp);
    strcat(_build_string, _buf);
    dtostrf(range_max, 0, MAX_PREC, _tmp);
    sprintf(_buf, "%s\r", _tmp);
@@ -125,8 +122,8 @@ bool CommManager::addSlider(float* linker, const char* title,
    sprintf(_buf, "%s\r%s\r", _tmp, toggle? "True":"False");
    strcat(_build_string, _buf);
 #else
-   sprintf(_buf, "S\r%s\r%f\r%f\r%f\r%s\r",
-      title, range_min, range_max,
+   sprintf(_buf, "S\r%.*s\r%f\r%f\r%f\r%s\r",
+      MAX_TITLE_LEN, title, range_min, range_max,
       resolution, toggle? "True":"False");
    strcat(_build_string, _buf);
 #endif
@@ -141,15 +138,14 @@ bool CommManager::addSlider(float* linker, const char* title,
 //                              float xrange_min, float xrange_max,
 //                              float yrange_min, float yrange_max,
 //                              float resolution, bool sticky) {
-//   if( _total_controls + 2 > MAX_CONTROLS
-//   ||  strlen(title) > MAX_TITLE_LEN )
+//   if( _total_controls + 2 > MAX_CONTROLS )
 //      return false;
 //      
 //   _controls[_total_controls++] = linker_x;
 //   _controls[_total_controls++] = linker_y;
 //#if defined S302_UNO
 //   dtostrf(xrange_min, 0, MAX_PREC, _tmp);
-//   sprintf(_buf, "J\r%s\r%s\r", title, _tmp);
+//   sprintf(_buf, "J\r%.*s\r%s\r", MAX_TITLE_LEN, title, _tmp);
 //   strcat(_build_string, _buf);
 //   dtostrf(xrange_max, 0, MAX_PREC, _tmp);
 //   sprintf(_buf, "%s\r", _tmp);
@@ -165,9 +161,9 @@ bool CommManager::addSlider(float* linker, const char* title,
 //      _tmp, sticky? "True":"False");
 //   strcat(_build_string, _buf);
 //#else
-//   sprintf(_buf, "J\r%s\r%f\r%f\r%f\r%f\r%f\r%s\r",
-//      title, xrange_min, xrange_max,
-//             yrange_min, yrange_max,
+//   sprintf(_buf, "J\r%.*s\r%f\r%f\r%f\r%f\r%f\r%s\r",
+//      MAX_TITLE_LEN, title, xrange_min, xrange_max,
+//                            yrange_min, yrange_max,
 //      resolution, sticky? "True":"False");
 //   strcat(_build_string, _buf);
 //#endif
@@ -183,7 +179,6 @@ bool CommManager::addPlot(float* linker, const char* title,
                           uint8_t burst,
                           uint8_t num_plots) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LEN
    ||  burst == 0
    ||  burst > (float)_report_period / (float)_step_period )
       return false;
@@ -192,15 +187,15 @@ bool CommManager::addPlot(float* linker, const char* title,
    _bursts[_total_reporters++] = burst;
 #if defined S302_UNO
    dtostrf(yrange_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "P\r%s\r%s\r", title, _tmp);
+   sprintf(_buf, "P\r%.*s\r%s\r", MAX_TITLE_LEN, title, _tmp);
    strcat(_build_string, _buf);
    dtostrf(yrange_max, 0, MAX_PREC, _tmp);
    sprintf(_buf, "%s\r%d\r%d\r%d\r",
       _tmp, steps_displayed, burst, num_plots);
    strcat(_build_string, _buf);
 #else
-   sprintf(_buf, "P\r%s\r%f\r%f\r%d\r%d\r%d\r",
-      title, yrange_min, yrange_max,
+   sprintf(_buf, "P\r%.*s\r%f\r%f\r%d\r%d\r%d\r",
+      MAX_TITLE_LEN, title, yrange_min, yrange_max,
       steps_displayed, burst, num_plots);
    strcat(_build_string, _buf);
 #endif
@@ -214,14 +209,14 @@ bool CommManager::addNumber(float* linker,
                             const char* title,
                             uint8_t burst) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LEN
    ||  burst == 0
    ||  burst > (float)_report_period / (float)_step_period )
       return false;
       
    _reporters[_total_reporters] = linker;
    _bursts[_total_reporters++] = burst;
-   sprintf(_buf, "N\r%s\r%d\rfloat\r", title, burst);
+   sprintf(_buf, "N\r%.*s\r%d\rfloat\r",
+      MAX_TITLE_LEN, title, burst);
    strcat(_build_string, _buf);
    
    return true;
@@ -231,14 +226,14 @@ bool CommManager::addNumber(int32_t* linker,
                             const char* title,
                             uint8_t burst) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LEN
    ||  burst == 0
    ||  burst > (float)_report_period / (float)_step_period )
       return false;
 
    _reporters[_total_reporters] = (float*)linker;
    _bursts[_total_reporters++] = burst;
-   sprintf(_buf, "N\r%s\r%d\rint\r", title, burst);
+   sprintf(_buf, "N\r%.*s\r%d\rint\r",
+      MAX_TITLE_LEN, title, burst);
    strcat(_build_string, _buf);
 
    return true;
