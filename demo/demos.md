@@ -15,6 +15,6 @@ There is a button that increments a numerical display each press.
 
 This demo tests the toggle functionality of sliders. It has one slider and one plot that should toggle between -1 and +1.
 
-## `joystick`
+<!-- ## `joystick`
 
-This demo tests the functionality of the joystick. In a plot and numerical display, it displays the distance and angle of the joystick vector.
+This demo tests the functionality of the joystick. In a plot and numerical display, it displays the distance and angle of the joystick vector. -->
