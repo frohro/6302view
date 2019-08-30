@@ -200,7 +200,7 @@ cm.addButton(&input, "Slider", -20, 20, 0.01, true);
 
 #### Reporters
 
-There is currently one ready-to-use reporting module.
+There are currently two ready-to-use reporting modules.
 
 ##### Plots
 
@@ -250,15 +250,14 @@ It first takes a pointer to either a real number (`float`) or a 32-bit integer (
 ```cpp
 // Example number reporters
 cm.addNumber(&i, "Count");
-cm.addNumber(&t, "temperature");
+cm.addNumber(&t, "Temperature");
 ```
 
+<p align="center">
+  <img alt="(number)" src="https://i.imgur.com/TyGHUyS.png"> 
+</p>
 
-
-
-(to be added)
-
-
+There is one optional parameter that controls how many data points are recorded per report period, identical to the corresponding optional parameter in [plots](#plots) (default `1`).
 
 ### `cm.step`
 
@@ -275,7 +274,8 @@ void loop() {
 
 ### GUI → Microcontroller
 
-* The `cm.step` routine listens for messages from the GUI of the form `id:value\n` where `\n` is a newline character. For example, if the ID index of a `float` control were `0`, and the GUI wants to set it to `6.28`, then it would send `0:6.28\n`. If the control were for a `bool`, then the message would be `0:true\n` or `0:false\n`. A joystick controls two `float`s and is controlled with two `id:value\n` messages.
+* The `cm.step` routine listens for messages from the GUI of the form `id:value\n` where `\n` is a newline character. For example, if the ID index of a `float` control were `0`, and the GUI wants to set it to `6.28`, then it would send `0:6.28\n`. If the control were for a `bool`, then the message would be `0:true\n` or `0:false\n`.
+<!-- A joystick controls two `float`s and is controlled with two `id:value\n` messages. -->
 * The GUI asks the microcontroller for the buildstring by just sending `\n`.
 
 ### Microcontroller → GUI
@@ -296,7 +296,7 @@ Each module starts with a letter to signify the type, follows with the name, and
 * `T` for Toggle
 * `B` for Button
 * `S` for Slider
-* `J` for Joystick
+<!-- * `J` for Joystick -->
 * `P` for Plot
 * `N` for Numerical reporter
 
