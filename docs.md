@@ -217,25 +217,44 @@ void loop() {
 ```cpp
 #include <Six302.h>
 
-CommManager cm(1000, 5000);
+CommManager cm(5000, 50000);
 
-float input, output;
+// controls
+bool tgl;
+float input;
+
+// reporters
+float output;
 
 void setup() {
+   // initialize values
+   tgl = true;
+
    // Add modules
+   cm.addToggle(&tgl, "Add ten");
    cm.addSlider(&input, "Input", -5, 5, 0.01);
-   cm.addPlot(&output, "Output", -1, 30);
+
+   cm.addPlot(&output, "Output", 0, 35);
+
    // Connect via serial
    cm.connect(&Serial, 115200);
 }
 
 void loop() {
+
    output = input * input;
+   if( tgl )
+      output += 10;
+
    cm.step();
 }
 ```
 
-This creates one control (a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 down to 0 up to 25.
+This creates two controls (a toggle and a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 down to 0 up to 25, plus ten if the toggle is switched on.
+
+![(image of example)](https://i.imgur.com/6IyXB53.png)
+
+Above is what the example renders to in the GUI, with the toggle switched off less than a second beforehand.
 
 ## Microcontroller differences
 
@@ -261,20 +280,6 @@ Attempting to add more controls or reporters when the respective maximum is met 
 ### Arduino Uno
 
 The Arduino Uno has remarkable limitations in comparison to the other microcontrollers supported in this project. Because of this, constraints are in place with respect to memory.
-
-<!-- For the routines that add elements that require you to specify a range (namely, `addSlider`, `addJoystick`, and `addPlot`), curly braces (`initializer_list`s) should not be used to specify the ranges; in its place, give two arguments -- for the lower and the higher end of the range. For example:
-
-```cpp
-// supported only on the Teensy, ESP8266, and ESP32:
-cm.addSlider(&input, "Input", {-5, 5}, 0.1);
-cm.addPlot(&output, "Output", {-1, 30});
-
-// supported only on the Uno:
-cm.addSlider(&input, "Input", -5, 5, 0.1);
-cm.addPlot(&output, "Output", -1, 30);
-```
-
-The curly braces are there as sugar to make your code a bit more human-readable. The intent is also to make it less difficult to remember the list of arguments of these routines. For instance, it's probably easier to recognize that `cm.addSlider(&x, "x", {0, 10}, 0.1);` creates a slider between 0 and 10 at a step size of 0.1 than it is to get the same idea from `cm.addSlider(&x, "x", 0, 10, 0.1);`, and it's probably easier to remember "link, name, range" than "link, name, low, high" for the `addPlot` routine after a long weekend. -->
 
 The Uno cannot natively format floats into strings or char arrays using `sprintf`. Instead, it uses `dtostrf`, which takes an argument specifying the number of digits after the decimal point to be printed. One may change the `MAX_PREC` definition in the `.h` to adjust this argument.
 
@@ -313,7 +318,9 @@ There are three types of signals sent from the microcontroller:
 
 #### How build instructions are sent
 
-The build instructions' syntax is `\fB` followed by the list of modules and closing with `\n`. Each module starts with a letter to signify the type, follows with the name, and then with the remaining arguments as they are defined in the routine.
+The build instructions' syntax is `\fB` followed by the list of modules, then the values of the controls at the time of requesting the build string, and finally closing with `\n`.
+
+Each module starts with a letter to signify the type, follows with the name, and then with the remaining arguments as they are defined in the routine.
 * `T` for Toggle
 * `B` for Button
 * `S` for Slider
@@ -323,13 +330,19 @@ The build instructions' syntax is `\fB` followed by the list of modules and clos
 
 Each module, as well as the arguments of each module, are separated by `\r`.
 
-For example, the build string for the quick example above (the one that adds a slider and a plot) is:
+Following the modules is a list of the current values of the controls, denoted by the `#` symbol. Each value is followed by `\r`. This list ends with the finalizing `\n`.
+
+For example, the build string for [the code above](#for-example) (the one that adds a toggle, slider, and plot) is:
 
 ```plaintext
-\fBS\rInput\r-5.000000\r5.000000\r0.100000\rFalse\rP\rOutput\r-1.000000\r30.000000\r10\r1\r\n
+\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#true\r0.000000\r\n
 ```
 
-<!--(Sadly, the carriage return is not rendered as a new line in the serial monitor (Arduino IDE 1.8.9 on Windows 10).)-->
+If the user changes the value of `input` to `2.96` and they switch the toggle off, and the GUI requests the build string again, then the message sent will change to:
+
+```plaintext
+\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#false\r2.960000\r\n
+```
 
 #### How the data are reported
 
