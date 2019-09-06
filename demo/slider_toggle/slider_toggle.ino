@@ -19,8 +19,10 @@ float output;
 void setup() {
    
    /* Add modules */
-   cm.addSlider(&input, "Left",   -1,   +1, 0.1, true); // true indicates toggle
+   input = 3.0;
    cm.addPlot(&output, "Right", -1.1, +1.1);
+   cm.addSlider(&input, "Left",   -1,   +1, 0.1, true); // true indicates toggle
+   
 
    /* Ready to communicate over Serial */
    cm.connect(&Serial, 115200);

@@ -46,6 +46,7 @@ function Toggle(unique,title,names=["OFF","ON"]){
     }
 
     this.update = function(value){
+        if (typeof value == "boolean") value = (value=="true");
         if(value) slider_input.checked = true;
         else slider_input.checked = false;
         value_div.innerHTML = names[slider_input.checked?1:0];

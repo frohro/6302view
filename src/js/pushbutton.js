@@ -35,6 +35,12 @@ function Button(unique,title,color=null,bg_color=null){
     }
     setup();
 
+    this.update = function(f){
+        if (typeof f == "boolean") f = (f=="true");
+        if(f) button_element = true;
+        else button_element = false;
+    }
+
     button_element.addEventListener("mousedown",function(){
         var local_change = new CustomEvent('ui_change',{detail:{"message":String(unique)+":"+String(true)}});
         document.dispatchEvent(local_change);

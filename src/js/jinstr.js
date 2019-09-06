@@ -325,6 +325,7 @@ function MPBuild(intData) {
     input_uniques = [];
     WipeGUI();
     var build_array = reshapeDelim(intData, 13); // ~  delim
+    console.log(build_array);
     for (var i = 0; i < build_array.length;){
         let newdiv = document.createElement("div"); //new div
         newdiv.setAttribute("id","box_"+String(unique_counter)); 
@@ -334,6 +335,7 @@ function MPBuild(intData) {
         let whichFrob = build_array[i];
         switch (whichFrob){ // 
             case "S": //slider
+                console.log("building slider");
                 var title = build_array[i+1];
                 var low = parseFloat(build_array[i+2]);
                 var high = parseFloat(build_array[i+3]);
@@ -347,6 +349,7 @@ function MPBuild(intData) {
                 i+=7;
                 break;
             case "T": //toggle
+                console.log("building toggle");
                 var title = build_array[i+1];
                 var start = build_array[i+2];
                 csv_col_headers.push(title);
@@ -356,6 +359,7 @@ function MPBuild(intData) {
                 i+=3;
                 break;
             case "B": //button
+                console.log("building button");
                 var title = build_array[i+1];
                 var start = build_array[i+2];
                 csv_col_headers.push(title);
@@ -377,6 +381,7 @@ function MPBuild(intData) {
                 i+=6;
                 break;
             case "P": //plot:
+                console.log("building plot");
                 var title = build_array[i+1];
                 var v_low = parseFloat(build_array[i+2]);
                 var v_high = parseFloat(build_array[i+3]);
@@ -396,6 +401,7 @@ function MPBuild(intData) {
                 i+=7;
                 break;
             case "N": //numerical reporter:
+                console.log("building numerical reporter");
                 var title = build_array[i+1];
                 var depth = parseInt(build_array[i+2]); //need to change
                 var type = build_array[i+3];
@@ -404,6 +410,15 @@ function MPBuild(intData) {
                 displayers.push(new Numerical_Reporter(unique_counter,title,type,"red","black"));
                 csv_col_headers.push(title);
                 i+=4;
+                break;
+            case "#": //starter values
+                console.log("found starter");
+                var len = user_inputs.length;
+                var k;
+                for (k=1; k<=len; k++){
+                    user_inputs.update(build_array[i+k]);
+                }
+                i+=k+1;
                 break;
             default:
                 i = build_array.length; // Bad String, stop building and abort

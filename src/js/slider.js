@@ -15,6 +15,7 @@ function Slider(unique,label,min, max, resolution,toggle, color=null){
     var div_id = "box_"+String(unique);
     var label = String(label);
     var color = color;
+    var resolution = resolution; //use the actual resolution
     var unique = String(unique); //unique identifying number
     var overall_div = document.getElementById(div_id);
     var holder;
