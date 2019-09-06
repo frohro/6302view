@@ -89,7 +89,7 @@ The numbers control the rate at which the system operates. `1000` is the time in
 
 ### GUI
 
-The blank GUI page looks like this:
+The GUI is located at `gui/gui.html`. The page initially looks like this:
 
 ![(image of blank gui)](https://i.imgur.com/TJKfr3J.png)
 
@@ -103,13 +103,15 @@ This is default communication mode. To connect, enter a Serial pointer and BAUD 
 cm.connect(&Serial, 115200);
 ```
 
-When you've uploaded your code, run `local_server.py`. It broadcasts your microcontroller's Serial to your localhost (`127.0.0.1`) via WebSockets, making the GUI work. The Python script uses the `websockets` and `pyserial` modules.
+When you've uploaded your code, run `gui/local_server.py`. It broadcasts your microcontroller's Serial to your localhost (`127.0.0.1`) via WebSockets, making the GUI work. The Python script uses the `websockets` and `pyserial` modules.
 
 ![(image of local_server.py in console)](https://i.imgur.com/1DN47zF.png)
 
 ### WebSockets
 
-This is not the default. Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode. This method can only work on the ESP8266 or ESP32. Make sure you have the `WebSockets` library installed (`Manage libraries...` > Search for and install [`WebSockets`](https://github.com/Links2004/arduinoWebSockets) published by Markus Sattler).
+This is not the default. Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode.
+
+**Note**: This method can only work on the ESP8266 or ESP32. Make sure you have the `WebSockets` library installed (`Manage libraries...` > Search for and install [`WebSockets`](https://github.com/Links2004/arduinoWebSockets) by Markus Sattler).
 
 To connect, enter your SSID and p/w:
 
