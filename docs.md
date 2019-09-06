@@ -4,8 +4,8 @@
 
 I've structured this page roughly in order of increasing detail.
 
-* [Example](#example)
-* [Set-up](#set-up)
+* [**Example**](#example)
+* [**Set-up**](#set-up)
   * [GUI](#gui)
   * [Serial](#serial)
   * [WebSockets](#websockets)
@@ -18,13 +18,13 @@ I've structured this page roughly in order of increasing detail.
       * [Plots](#plots)
       * [Numerical reporters](#numerical-reporters)
   * [`cm.step`](#cmstep)
-* [How the information is communicated](#how-the-information-is-communicated)
+* [**How the information is communicated**](#how-the-information-is-communicated)
   * [GUI → Microcontroller](#gui--microcontroller)
   * [Microcontroller → GUI](#microcontroller--gui)
     * [How build instructions are sent](#how-build-instructions-are-sent)
     * [How the data are reported](#how-the-data-are-reported)
     * [How debug messages are sent](#how-debug-messages-are-sent)
-* [Microcontroller differences](#microcontroller-differences)
+* [**Microcontroller differences**](#microcontroller-differences)
   * [Quick table](#quick-table)
   * [Arduino Uno](#arduino-uno)
   * [Teensy](#teensy)
@@ -296,9 +296,9 @@ Each module starts with a letter to signify the type, follows with the name, and
 * `T` for Toggle
 * `B` for Button
 * `S` for Slider
-<!-- * `J` for Joystick -->
 * `P` for Plot
 * `N` for Numerical reporter
+<!-- * `J` for Joystick -->
 
 Each module, as well as the arguments of each module, are separated by `\r`.
 
@@ -320,9 +320,9 @@ If the user changes the value of `input` to `2.96` and they switch the toggle of
 
 Report messages take the form of `\fR` followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value, closing with `\n`. The bytes are sent in the order they were added in setup, which is precisely the order as they appear in the build string.
 
-Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least\* `4 * _total_reporters` bytes follow, then the closing `\n`.
+Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least `4 * _total_reporters` bytes follow**\***, then the closing `\n`.
 
-\* more than, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
+**\*** more than this calculation, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
 
 #### How debug messages are sent
 
