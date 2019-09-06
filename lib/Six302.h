@@ -70,7 +70,7 @@ using namespace std::placeholders;
          #define MAX_REPORTERS 5
          #define MAX_BURST     5
 
-         #define MAX_TITLE_LEN 10
+         #define MAX_TITLE_LEN 20
          #define MAX_DEBUG_LEN 500
 
          #define MAX_PREC      7
@@ -83,7 +83,7 @@ using namespace std::placeholders;
          #define MAX_REPORTERS 10
          #define MAX_BURST     10
 
-         #define MAX_TITLE_LEN 10
+         #define MAX_TITLE_LEN 30
          #define MAX_DEBUG_LEN 1000
 
 #endif
@@ -186,9 +186,7 @@ class CommManager {
       char    _buf[MAX_BUFFER_LEN]; // long general buffer
       char    _build_string[MAX_BUILD_STRING_LEN];
       char    _debug_string[MAX_DEBUG_LEN];
-#if defined S302_UNO
       char    _tmp[24]; // short general buffer
-#endif
 
       /* Burst mechanic */
 
@@ -199,6 +197,9 @@ class CommManager {
 
       float*  _controls[MAX_CONTROLS];   uint8_t _total_controls;
       float*  _reporters[MAX_REPORTERS]; uint8_t _total_reporters;
+
+      /* Remember the inputs' types */
+      bool _ctrl_types[MAX_CONTROLS];
 
 #if defined S302_SERIAL
 #if defined TEENSYDUINO

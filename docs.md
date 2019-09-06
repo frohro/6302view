@@ -2,6 +2,9 @@
 
 ## Table of contents
 
+I've structured this page roughly in order of increasing detail.
+
+* [Example](#example)
 * [Set-up](#set-up)
   * [GUI](#gui)
   * [Serial](#serial)
@@ -15,19 +18,62 @@
       * [Plots](#plots)
       * [Numerical reporters](#numerical-reporters)
   * [`cm.step`](#cmstep)
-  * [For example](#for-example)
+* [How the information is communicated](#how-the-information-is-communicated)
+  * [GUI → Microcontroller](#gui--microcontroller)
+  * [Microcontroller → GUI](#microcontroller--gui)
+    * [How build instructions are sent](#how-build-instructions-are-sent)
+    * [How the data are reported](#how-the-data-are-reported)
+    * [How debug messages are sent](#how-debug-messages-are-sent)
 * [Microcontroller differences](#microcontroller-differences)
   * [Quick table](#quick-table)
   * [Arduino Uno](#arduino-uno)
   * [Teensy](#teensy)
   * [ESP8266](#esp8266)
   * [ESP32](#esp32)
-* [How the information is communicated (the details)](#how-the-information-is-communicated-the-details)
-  * [GUI → Microcontroller](#gui--microcontroller)
-  * [Microcontroller → GUI](#microcontroller--gui)
-    * [How build instructions are sent](#how-build-instructions-are-sent)
-    * [How the data are reported](#how-the-data-are-reported)
-    * [How debug messages are sent](#how-debug-messages-are-sent)
+
+## Example
+
+```cpp
+#include <Six302.h>
+
+CommManager cm(5000, 50000);
+
+// controls
+bool tgl;
+float input;
+
+// reporters
+float output;
+
+void setup() {
+   // initialize values
+   tgl = true;
+
+   // Add modules
+   cm.addToggle(&tgl, "Add ten");
+   cm.addSlider(&input, "Input", -5, 5, 0.01);
+
+   cm.addPlot(&output, "Output", 0, 35);
+
+   // Connect via serial
+   cm.connect(&Serial, 115200);
+}
+
+void loop() {
+
+   output = input * input;
+   if( tgl )
+      output += 10;
+
+   cm.step();
+}
+```
+
+This `.ino` creates two controls (a toggle and a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 down to 0 up to 25, plus ten if the toggle is switched on.
+
+![(image of example)](https://i.imgur.com/6IyXB53.png)
+
+Above is what the example renders to in the GUI, with the slider modified and the toggle switched off less than a second beforehand.
 
 ## Set-up
 
@@ -154,7 +200,7 @@ cm.addButton(&input, "Slider", -20, 20, 0.01, true);
 
 #### Reporters
 
-There is currently one ready-to-use reporting module.
+There are currently two ready-to-use reporting modules.
 
 ##### Plots
 
@@ -199,7 +245,19 @@ The second changes how many data points to send up per report (default `1`). Thi
 
 Add a plain number module with `addNumber`.
 
-(Under development!)
+It first takes a pointer to either a real number (`float`) or a 32-bit integer (`int32_t`/`long int`), and ends with a title.
+
+```cpp
+// Example number reporters
+cm.addNumber(&i, "Count");
+cm.addNumber(&t, "Temperature");
+```
+
+<p align="center">
+  <img alt="(number)" src="https://i.imgur.com/TyGHUyS.png"> 
+</p>
+
+There is one optional parameter that controls how many data points are recorded per report period, identical to the corresponding optional parameter in [plots](#plots) (default `1`).
 
 ### `cm.step`
 
@@ -212,30 +270,69 @@ void loop() {
 }
 ```
 
-## For example
+## How the information is communicated
 
-```cpp
-#include <Six302.h>
+### GUI → Microcontroller
 
-CommManager cm(1000, 5000);
+* The `cm.step` routine listens for messages from the GUI of the form `id:value\n` where `\n` is a newline character. For example, if the ID index of a `float` control were `0`, and the GUI wants to set it to `6.28`, then it would send `0:6.28\n`. If the control were for a `bool`, then the message would be `0:true\n` or `0:false\n`.
+<!-- A joystick controls two `float`s and is controlled with two `id:value\n` messages. -->
+* The GUI asks the microcontroller for the buildstring by just sending `\n`.
 
-float input, output;
+### Microcontroller → GUI
 
-void setup() {
-   // Add modules
-   cm.addSlider(&input, "Input", -5, 5, 0.01);
-   cm.addPlot(&output, "Output", -1, 30);
-   // Connect via serial
-   cm.connect(&Serial, 115200);
-}
+There are three types of signals sent from the microcontroller:
 
-void loop() {
-   output = input * input;
-   cm.step();
-}
+* What modules to **B**uild
+* The data **R**eport
+* **D**ebugger messages
+
+**Note:** All messages sent from the microcontroller to the GUI are enclosed in `\f` to start and `\n` to close.
+
+#### How build instructions are sent
+
+The build instructions' syntax is `\fB` followed by the list of modules, then the values of the controls at the time of requesting the build string, and finally closing with `\n`.
+
+Each module starts with a letter to signify the type, follows with the name, and then with the remaining arguments as they are defined in the routine.
+* `T` for Toggle
+* `B` for Button
+* `S` for Slider
+<!-- * `J` for Joystick -->
+* `P` for Plot
+* `N` for Numerical reporter
+
+Each module, as well as the arguments of each module, are separated by `\r`.
+
+Following the modules is a list of the current values of the controls, denoted by the `#` symbol. Each value is followed by `\r`. This list ends with the finalizing `\n`.
+
+For example, the build string for [the code above](#for-example) (the one that adds a toggle, slider, and plot), at initialization, is:
+
+```plaintext
+\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#true\r0.000000\r\n
 ```
 
-This creates one control (a slider) and one reporter (a plot). The input is squared into the output, so, sliding from -5 to 0 to +5 moves the plot from 25 down to 0 up to 25.
+If the user changes the value of `input` to `2.96` and they switch the toggle off, and the GUI requests the build string again, then the message sent will change to:
+
+```plaintext
+\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#false\r2.960000\r\n
+```
+
+#### How the data are reported
+
+Report messages take the form of `\fR` followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value, closing with `\n`. The bytes are sent in the order they were added in setup, which is precisely the order as they appear in the build string.
+
+Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least\* `4 * _total_reporters` bytes follow, then the closing `\n`.
+
+\* more than, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
+
+#### How debug messages are sent
+
+When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Debug messages start with `\fD`, then with four bytes representing the lowest headroom over the last report period as a `float`, follows with the user's actual message, and terminates by `\n`. Multiple lines in one debug message are separated by `\r`. The debug string is sent once per report period.
+
+(Currently only `char` arrays and `String`s are supported.)
+
+(Picture to be added once implemented.)
+
+(This feature currently operates in the browser's console log rather than something more explicit on the webpage itself.)
 
 ## Microcontroller differences
 
@@ -243,36 +340,24 @@ This creates one control (a slider) and one reporter (a plot). The input is squa
 
 ### Quick table
 
-| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_BURST` | `MAX_DEBUG_LEN` |
-| ---------------:|:--------------:|:---------------:|:-----------:|:---------------:|
-| Arduino Uno     | 5              | 5               | 5           | 500             |
-| Teensy          | 20             | 10              | 10          | 1000            |
-| ESP8266         | 20             | 10              | 10          | 1000            |
-| ESP32           | 20             | 10              | 10          | 1000            |
+| Microcontroller | `MAX_CONTROLS` | `MAX_REPORTERS` | `MAX_BURST` | `MAX_DEBUG_LEN` | `MAX_TITLE_LEN` |
+| ---------------:|:--------------:|:---------------:|:-----------:|:---------------:|:---------------:|
+| Arduino Uno     | 5              | 5               | 5           | 500             | 20              |
+| Teensy          | 20             | 10              | 10          | 1000            | 30              |
+| ESP8266         | 20             | 10              | 10          | 1000            | 30              |
+| ESP32           | 20             | 10              | 10          | 1000            | 30              |
 
 Attempting to add more controls or reporters when the respective maximum is met will not add more.
 
-`MAX_BURST` sets the maximum number of data recordings, per reporter, per report period. See the (currently non-existent) section for more details.
+`MAX_BURST` sets the maximum number of data recordings, per reporter, per report period. See [#Plots](#plots) for more details.
 
 `MAX_DEBUG_LEN` sets the maximum amount of characters you are able to send per report period using the `debug` routine. If your debug messages are being cut off, either shorten your messages, send less of them per report period, or increase this constant.
+
+`MAX_TITLE_LEN` sets the maximum length of titles. Long titles are truncated in the [build string](#how-build-instructions-are-sent).
 
 ### Arduino Uno
 
 The Arduino Uno has remarkable limitations in comparison to the other microcontrollers supported in this project. Because of this, constraints are in place with respect to memory.
-
-<!-- For the routines that add elements that require you to specify a range (namely, `addSlider`, `addJoystick`, and `addPlot`), curly braces (`initializer_list`s) should not be used to specify the ranges; in its place, give two arguments -- for the lower and the higher end of the range. For example:
-
-```cpp
-// supported only on the Teensy, ESP8266, and ESP32:
-cm.addSlider(&input, "Input", {-5, 5}, 0.1);
-cm.addPlot(&output, "Output", {-1, 30});
-
-// supported only on the Uno:
-cm.addSlider(&input, "Input", -5, 5, 0.1);
-cm.addPlot(&output, "Output", -1, 30);
-```
-
-The curly braces are there as sugar to make your code a bit more human-readable. The intent is also to make it less difficult to remember the list of arguments of these routines. For instance, it's probably easier to recognize that `cm.addSlider(&x, "x", {0, 10}, 0.1);` creates a slider between 0 and 10 at a step size of 0.1 than it is to get the same idea from `cm.addSlider(&x, "x", 0, 10, 0.1);`, and it's probably easier to remember "link, name, range" than "link, name, low, high" for the `addPlot` routine after a long weekend. -->
 
 The Uno cannot natively format floats into strings or char arrays using `sprintf`. Instead, it uses `dtostrf`, which takes an argument specifying the number of digits after the decimal point to be printed. One may change the `MAX_PREC` definition in the `.h` to adjust this argument.
 
@@ -291,57 +376,3 @@ The ESP8266 is practically the same as the Teensy, except it supports communicat
 Because the ESP32 has a second core, it is desirable to run the `CommManager` over there, rather than on the primary core, to open up headroom. `cm.step` in your `loop` routine will still work; however, it's only sugar offering timing control. `cm.headroom()` returns the headroom for your `loop` routine because it is likely to be more useful than the headroom for the task running on the second core, which is generally constant around six microseconds off of the step period.
 
 The ESP32 also supports communication over WebSockets.
-
-## How the information is communicated (the details)
-
-### GUI → Microcontroller
-
-* The `cm.step` routine listens for messages from the GUI of the form `id:value\n` where `\n` is a newline character. For example, if the ID index of a `float` control were `0`, and the GUI wants to set it to `6.28`, then it would send `0:6.28\n`. If the control were for a `bool`, then the message would be `0:true\n` or `0:false\n`. A joystick controls two `float`s and is controlled with two `id:value\n` messages.
-* The GUI asks the microcontroller for the buildstring by just sending `\n`.
-
-### Microcontroller → GUI
-
-There are three types of signals sent from the microcontroller:
-
-* What modules to **B**uild
-* The data **R**eport
-* **D**ebugger messages
-
-**Note:** All messages sent from the microcontroller to the GUI are enclosed in `\f` to start and `\n` to close.
-
-#### How build instructions are sent
-
-The build instructions' syntax is `\fB` followed by the list of modules and closing with `\n`. Each module starts with a letter to signify the type, follows with the name, and then with the remaining arguments as they are defined in the routine.
-* `T` for Toggle
-* `B` for Button
-* `S` for Slider
-* `J` for Joystick
-* `P` for Plot
-* `N` for Numerical reporter
-
-Each module, as well as the arguments of each module, are separated by `\r`.
-
-For example, the build string for the quick example above (the one that adds a slider and a plot) is:
-
-```plaintext
-\fBS\rInput\r-5.000000\r5.000000\r0.100000\rFalse\rP\rOutput\r-1.000000\r30.000000\r10\r1\r\n
-```
-
-<!--(Sadly, the carriage return is not rendered as a new line in the serial monitor (Arduino IDE 1.8.9 on Windows 10).)-->
-
-#### How the data are reported
-
-Report messages take the form of `\fR` followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value, closing with `\n`. The bytes are sent in the order they were added in setup, which is precisely the order as they appear in the build string.
-
-Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least\* `4 * _total_reporters` bytes follow, then the closing `\n`.
-
-\* more than, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
-
-#### How debug messages are sent
-
-When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Debug messages start with `\fD`, then with four bytes representing the lowest headroom over the last report period as a `float`, follows with the user's actual message, and terminates by `\n`. Multiple lines in one debug message are separated by `\r`. The debug string is sent once per report period.
-
-(Currently only `char` arrays and `Sting`s are supported.)
-
-(Picture to be added.)
-

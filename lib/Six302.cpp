@@ -20,8 +20,8 @@ CommManager::CommManager(uint32_t sp, uint32_t rp) {
 /* :: connect( &Serial, baud ) 
              ( "ssid", "p/w" ) */
 
-#if defined S302_SERIAL
-#if defined TEENSYDUINO
+#ifdef S302_SERIAL
+#ifdef TEENSYDUINO
 void CommManager::connect(usb_serial_class* s, uint32_t baud)
 #else
 void CommManager::connect(HardwareSerial* s, uint32_t baud)
@@ -52,7 +52,7 @@ void CommManager::connect(char* ssid, char* pw) {
    _wss.begin();
    _wss.onEvent(std::bind(&CommManager::_on_websocket_event, this, _1, _2, _3, _4));
 #endif
-#if defined ESP32
+#ifdef ESP32
    _baton = xSemaphoreCreateMutex();
    disableCore0WDT();
    xTaskCreatePinnedToCore( _walk,
@@ -64,12 +64,12 @@ void CommManager::connect(char* ssid, char* pw) {
                             0 );
 #endif
    // Initialize timers
-#if defined TEENSYDUINO
+#ifdef TEENSYDUINO
    _main_timer = 0;
 #else
    _main_timer = micros();
 #endif
-#if defined ESP32
+#ifdef ESP32
    _secondary_timer = micros();
 #endif
 }
@@ -79,12 +79,11 @@ void CommManager::connect(char* ssid, char* pw) {
 /* :: addToggle( link, title ) */
 
 bool CommManager::addToggle(bool* linker, const char* title) {
-   if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LEN )
+   if( _total_controls + 1 > MAX_CONTROLS )
       return false;
       
    _controls[_total_controls++] = (float*)linker;
-   sprintf(_buf, "T\r%s\r", title);
+   sprintf(_buf, "T\r%.*s\r", MAX_TITLE_LEN, title);
    strcat(_build_string, _buf);
    
    return true;
@@ -93,12 +92,11 @@ bool CommManager::addToggle(bool* linker, const char* title) {
 /* :: addButton( link, title ) */
 
 bool CommManager::addButton(bool* linker, const char* title) {
-   if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LEN )
+   if( _total_controls + 1 > MAX_CONTROLS )
       return false;
       
    _controls[_total_controls++] = (float*)linker;
-   sprintf(_buf, "B\r%s\r", title);
+   sprintf(_buf, "B\r%.*s\r", MAX_TITLE_LEN, title);
    strcat(_build_string, _buf);
    
    return true;
@@ -109,24 +107,24 @@ bool CommManager::addButton(bool* linker, const char* title) {
 bool CommManager::addSlider(float* linker, const char* title,
                             float range_min, float range_max,
                             float resolution, bool toggle) {
-   if( _total_controls + 1 > MAX_CONTROLS
-   ||  strlen(title) > MAX_TITLE_LEN )
+   if( _total_controls + 1 > MAX_CONTROLS )
       return false;
 
-   _controls[_total_controls++] = linker;
-#if defined S302_UNO
+   _controls[_total_controls] = linker;
+   _ctrl_types[_total_controls++] = true; // float
+#ifdef S302_UNO
    dtostrf(range_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "S\r%s\r%s\r", title, _tmp);
+   sprintf(_buf, "S\r%.*s\r%s\r", MAX_TITLE_LEN, title, _tmp);
    strcat(_build_string, _buf);
    dtostrf(range_max, 0, MAX_PREC, _tmp);
    sprintf(_buf, "%s\r", _tmp);
    strcat(_build_string, _buf);
    dtostrf(resolution, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "%s\r%s\r", _tmp, toggle? "True":"False");
+   sprintf(_buf, "%s\r%s", _tmp, toggle? "True":"False");
    strcat(_build_string, _buf);
 #else
-   sprintf(_buf, "S\r%s\r%f\r%f\r%f\r%s\r",
-      title, range_min, range_max,
+   sprintf(_buf, "S\r%.*s\r%f\r%f\r%f\r%s\r",
+      MAX_TITLE_LEN, title, range_min, range_max,
       resolution, toggle? "True":"False");
    strcat(_build_string, _buf);
 #endif
@@ -141,15 +139,16 @@ bool CommManager::addSlider(float* linker, const char* title,
 //                              float xrange_min, float xrange_max,
 //                              float yrange_min, float yrange_max,
 //                              float resolution, bool sticky) {
-//   if( _total_controls + 2 > MAX_CONTROLS
-//   ||  strlen(title) > MAX_TITLE_LEN )
+//   if( _total_controls + 2 > MAX_CONTROLS )
 //      return false;
 //      
-//   _controls[_total_controls++] = linker_x;
-//   _controls[_total_controls++] = linker_y;
-//#if defined S302_UNO
+//   _controls[_total_controls] = linker_x;
+//   _ctrl_types[_total_controls++] = true; // float
+//   _controls[_total_controls] = linker_y;
+//   _ctrl_types[_total_controls++] = true; // float
+//#ifdef S302_UNO
 //   dtostrf(xrange_min, 0, MAX_PREC, _tmp);
-//   sprintf(_buf, "J\r%s\r%s\r", title, _tmp);
+//   sprintf(_buf, "J\r%.*s\r%s\r", MAX_TITLE_LEN, title, _tmp);
 //   strcat(_build_string, _buf);
 //   dtostrf(xrange_max, 0, MAX_PREC, _tmp);
 //   sprintf(_buf, "%s\r", _tmp);
@@ -165,9 +164,9 @@ bool CommManager::addSlider(float* linker, const char* title,
 //      _tmp, sticky? "True":"False");
 //   strcat(_build_string, _buf);
 //#else
-//   sprintf(_buf, "J\r%s\r%f\r%f\r%f\r%f\r%f\r%s\r",
-//      title, xrange_min, xrange_max,
-//             yrange_min, yrange_max,
+//   sprintf(_buf, "J\r%.*s\r%f\r%f\r%f\r%f\r%f\r%s\r",
+//      MAX_TITLE_LEN, title, xrange_min, xrange_max,
+//                            yrange_min, yrange_max,
 //      resolution, sticky? "True":"False");
 //   strcat(_build_string, _buf);
 //#endif
@@ -183,24 +182,23 @@ bool CommManager::addPlot(float* linker, const char* title,
                           uint8_t burst,
                           uint8_t num_plots) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LEN
    ||  burst == 0
    ||  burst > (float)_report_period / (float)_step_period )
       return false;
 
    _reporters[_total_reporters] = linker;
    _bursts[_total_reporters++] = burst;
-#if defined S302_UNO
+#ifdef S302_UNO
    dtostrf(yrange_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "P\r%s\r%s\r", title, _tmp);
+   sprintf(_buf, "P\r%.*s\r%s\r", MAX_TITLE_LEN, title, _tmp);
    strcat(_build_string, _buf);
    dtostrf(yrange_max, 0, MAX_PREC, _tmp);
    sprintf(_buf, "%s\r%d\r%d\r%d\r",
       _tmp, steps_displayed, burst, num_plots);
    strcat(_build_string, _buf);
 #else
-   sprintf(_buf, "P\r%s\r%f\r%f\r%d\r%d\r%d\r",
-      title, yrange_min, yrange_max,
+   sprintf(_buf, "P\r%.*s\r%f\r%f\r%d\r%d\r%d\r",
+      MAX_TITLE_LEN, title, yrange_min, yrange_max,
       steps_displayed, burst, num_plots);
    strcat(_build_string, _buf);
 #endif
@@ -214,14 +212,14 @@ bool CommManager::addNumber(float* linker,
                             const char* title,
                             uint8_t burst) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LEN
    ||  burst == 0
    ||  burst > (float)_report_period / (float)_step_period )
       return false;
       
    _reporters[_total_reporters] = linker;
    _bursts[_total_reporters++] = burst;
-   sprintf(_buf, "N\r%s\r%d\rfloat\r", title, burst);
+   sprintf(_buf, "N\r%.*s\r%d\rfloat\r",
+      MAX_TITLE_LEN, title, burst);
    strcat(_build_string, _buf);
    
    return true;
@@ -231,14 +229,14 @@ bool CommManager::addNumber(int32_t* linker,
                             const char* title,
                             uint8_t burst) {
    if( _total_reporters >= MAX_REPORTERS
-   ||  strlen(title) > MAX_TITLE_LEN
    ||  burst == 0
    ||  burst > (float)_report_period / (float)_step_period )
       return false;
 
    _reporters[_total_reporters] = (float*)linker;
    _bursts[_total_reporters++] = burst;
-   sprintf(_buf, "N\r%s\r%d\rint\r", title, burst);
+   sprintf(_buf, "N\r%.*s\r%d\rint\r",
+      MAX_TITLE_LEN, title, burst);
    strcat(_build_string, _buf);
 
    return true;
@@ -264,7 +262,7 @@ void CommManager::_step() {
 
    _control();
 
-#if defined ESP32
+#ifdef ESP32
 
    int32_t leftover = _step_period - (micros() - _secondary_timer);
    if( leftover > 0 )
@@ -279,7 +277,7 @@ void CommManager::_step() {
    
 }
 
-#if defined ESP32
+#ifdef ESP32
 void CommManager::step() {
    // Just sugar, offering loop control
    _wait();
@@ -307,7 +305,7 @@ void CommManager::_control() {
 
    // READ incoming message, if any
    _buf[0] = '\0';
-#if defined S302_SERIAL
+#ifdef S302_SERIAL
    if( !_serial->available() )
       return;
    uint8_t i = 0;
@@ -332,9 +330,29 @@ void CommManager::_control() {
       } break;
       
       case '\n': {
-         // (GUI is asking for the build string)
-         // send buildstring
+         // (GUI is asking for the build string!)
+
+         // prepare current values!
+         strcpy(_buf, "#");
+         for( uint8_t i = 0; i < _total_controls; i++ ) {
+            if( _ctrl_types[i] ) {
+               // if float
+#ifdef S302_UNO
+               dtostrf(*_controls[i], 0, MAX_PREC, _tmp);
+#else
+               sprintf(_tmp, "%f", *_controls[i]);
+#endif
+               strcat(_buf, _tmp);
+            } else {
+               // if bool
+               strcat(_buf, *((bool*)_controls[i])? "true":"false");
+            }
+            strcat(_buf, "\r");
+         }
+
+         // send buildstring!
          BROADCAST(_build_string, strlen(_build_string));
+         BROADCAST(_buf, strlen(_buf));
          BROADCAST("\n", 2);
          return;
       } break;
@@ -364,7 +382,7 @@ void CommManager::_control() {
 
 void CommManager::_record(uint8_t reporter) {
    float burst;
-#if defined TEENSYDUINO
+#ifdef TEENSYDUINO
    burst = (float)_report_timer
 #else
    burst = (float)(micros() - _report_timer)
@@ -413,7 +431,7 @@ bool CommManager::_time_to_talk(uint32_t time_to_wait) {
    // Whether or not enough time has passed according to the given
    // time period. Determines when to report data.
    // depends on the microcontroller
-#if defined TEENSYDUINO
+#ifdef TEENSYDUINO
    if( time_to_wait <= _report_timer ) {
       _report_timer = _report_timer - time_to_wait;
 #else
@@ -429,7 +447,7 @@ bool CommManager::_time_to_talk(uint32_t time_to_wait) {
 
 void CommManager::_wait() {
    // How we wait depends on the microcontroller
-#if defined TEENSYDUINO
+#ifdef TEENSYDUINO
    uint32_t before = _main_timer;
    while(_step_period > _main_timer);
    _headroom = _main_timer - before;
@@ -445,7 +463,7 @@ void CommManager::_wait() {
 
 /* WebSocket event */
 
-#if defined S302_WEBSOCKETS
+#ifdef S302_WEBSOCKETS
 void CommManager::_on_websocket_event(
    uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
    

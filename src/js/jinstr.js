@@ -397,8 +397,8 @@ function MPBuild(intData) {
                 break;
             case "N": //numerical reporter:
                 var title = build_array[i+1];
-                var type = build_array[i+2];
-                var depth = parseInt(build_array[i+3]); //need to change
+                var depth = parseInt(build_array[i+2]); //need to change
+                var type = build_array[i+3];
                 report_count.push(1);
                 report_depth.push(depth);
                 displayers.push(new Numerical_Reporter(unique_counter,title,type,"red","black"));

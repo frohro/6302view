@@ -13,6 +13,7 @@ function Numerical_Reporter(unique,title,data_type,color=null,bg_color=null){
         var f32 = new Float32Array(buffer); 
         var i32 = new Int32Array(buffer); 
         f32[0] = value;
+        //console.log(data_type);
         if (data_type==="float"){
             return f32[0];
         } else{
