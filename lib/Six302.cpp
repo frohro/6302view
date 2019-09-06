@@ -333,7 +333,7 @@ void CommManager::_control() {
          // (GUI is asking for the build string!)
 
          // prepare current values!
-         strcpy(_buf, "#");
+         strcpy(_buf, "#\r");
          for( uint8_t i = 0; i < _total_controls; i++ ) {
             if( _ctrl_types[i] ) {
                // if float

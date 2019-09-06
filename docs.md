@@ -307,22 +307,22 @@ Following the modules is a list of the current values of the controls, denoted b
 For example, the build string for [the code above](#for-example) (the one that adds a toggle, slider, and plot), at initialization, is:
 
 ```plaintext
-\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#true\r0.000000\r\n
+\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#\rtrue\r0.000000\r\n
 ```
 
 If the user changes the value of `input` to `2.96` and they switch the toggle off, and the GUI requests the build string again, then the message sent will change to:
 
 ```plaintext
-\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#false\r2.960000\r\n
+\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#\rfalse\r2.960000\r\n
 ```
 
 #### How the data are reported
 
 Report messages take the form of `\fR` followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value, closing with `\n`. The bytes are sent in the order they were added in setup, which is precisely the order as they appear in the build string.
 
-Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least `4 * _total_reporters` bytes follow**\***, then the closing `\n`.
+Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least `4 * _total_reporters` bytes follow\*, then the closing `\n`.
 
-**\*** more than this calculation, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
+\* more than this calculation, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
 
 #### How debug messages are sent
 
