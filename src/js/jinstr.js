@@ -339,27 +339,30 @@ function MPBuild(intData) {
                 var high = parseFloat(build_array[i+3]);
                 var res = parseFloat(build_array[i+4]);
                 var toggle = build_array[i+5]==="True"?true:false;
+                var start = parseFloat(build_array[i+6]);
                 user_inputs.push(new Slider(unique_counter,title,low,high,res,toggle));
                 csv_col_headers.push(title);
                 current_inputs.push(0);
                 input_uniques.push(unique_counter);
-                i+=6;
+                i+=7;
                 break;
             case "T": //toggle
                 var title = build_array[i+1];
+                var start = build_array[i+2];
                 csv_col_headers.push(title);
                 user_inputs.push(new Toggle(unique_counter,title));
                 current_inputs.push(0);
                 input_uniques.push(unique_counter);
-                i+=2;
+                i+=3;
                 break;
             case "B": //button
                 var title = build_array[i+1];
+                var start = build_array[i+2];
                 csv_col_headers.push(title);
                 user_inputs.push(new Button(unique_counter,title));
                 current_inputs.push(0);
                 input_uniques.push(unique_counter);
-                i+=2;
+                i+=3;
                 break;
             case "J": //joystick (NO  CLUE ON HOW TO FORMAT THIS ONE JDS7/30/2019)
                 var title = build_array[i+1];

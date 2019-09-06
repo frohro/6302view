@@ -8,8 +8,8 @@
    the number displayed */
 
 // microseconds
-#define STEP_TIME 100000
-#define REPORT_TIME 500000
+#define STEP_TIME 10000
+#define REPORT_TIME 50000
 
 CommManager cm(STEP_TIME, REPORT_TIME);
 

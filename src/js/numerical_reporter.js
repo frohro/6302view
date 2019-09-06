@@ -9,10 +9,14 @@ function Numerical_Reporter(unique,title,data_type,color=null,bg_color=null){
     var unique = unique; //unique identifying number
 
     var format = function(value){
+        var buffer = new ArrayBuffer(4);
+        var f32 = new Float32Array(buffer); 
+        var i32 = new Int32Array(buffer); 
+        f32[0] = value;
         if (data_type==="float"){
-            return value;
+            return f32[0];
         } else{
-            return parseInt(value);
+            return i32[0];
         }
 
     }
@@ -38,6 +42,7 @@ function Numerical_Reporter(unique,title,data_type,color=null,bg_color=null){
         }else if (range[0] != null && value[0][0] <range[0]){
             value[0][0]= range[0];
         }
+        console.log(value[0][0]);
         reported.innerHTML = format(value[0][0])
     };
 };
