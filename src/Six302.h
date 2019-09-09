@@ -12,7 +12,7 @@
 /* WebSockets options */
 
 #define S302_PORT 80
-#define S302_VERBOSE // enable this to print debug information to Serial
+#define S302_VERBOSE // enable this to print debug information to Serial (WebSockets)
 
 #if ( defined S302_SERIAL &&  defined S302_WEBSOCKETS) || \
     (!defined S302_SERIAL && !defined S302_WEBSOCKETS)

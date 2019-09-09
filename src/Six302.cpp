@@ -333,7 +333,7 @@ void CommManager::_control() {
          // (GUI is asking for the build string!)
 
          // prepare current values!
-         strcpy(_buf, "#");
+         strcpy(_buf, "#\r");
          for( uint8_t i = 0; i < _total_controls; i++ ) {
             if( _ctrl_types[i] ) {
                // if float
@@ -468,6 +468,7 @@ void CommManager::_on_websocket_event(
    uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
    
    switch(type) {
+#ifdef S302_VERBOSE
       case WStype_DISCONNECTED: {
          Serial.printf("[%u] Disconnected\n", num);
       } break;
@@ -475,14 +476,17 @@ void CommManager::_on_websocket_event(
          Serial.printf("[%u] Connected from %s\n",
             num, _wss.remoteIP(num).toString().c_str());
       } break;
+#endif
       case WStype_TEXT: {
-         if( payload[0] == '\0' ) {
-            Serial.printf("[%u] Received empty message!\n", num);
-         } else {
-            Serial.printf("[%u] Received: ", num);
-            Serial.println((char*)payload);
+         if( payload[0] != '\0' ) {
             memcpy(_buf, payload, length);
             _buf[length] = '\0';
+#ifdef S302_VERBOSE
+            Serial.printf("[%u] Received: ", num);
+            Serial.println((char*)payload);
+         } else {
+            Serial.printf("[%u] Received empty message!\n", num);
+#endif
          }
       } break;
 

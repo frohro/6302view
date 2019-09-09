@@ -4,8 +4,8 @@
 
 I've structured this page roughly in order of increasing detail.
 
-* [Example](#example)
-* [Set-up](#set-up)
+* [**Example**](#example)
+* [**Set-up**](#set-up)
   * [GUI](#gui)
   * [Serial](#serial)
   * [WebSockets](#websockets)
@@ -18,13 +18,13 @@ I've structured this page roughly in order of increasing detail.
       * [Plots](#plots)
       * [Numerical reporters](#numerical-reporters)
   * [`cm.step`](#cmstep)
-* [How the information is communicated](#how-the-information-is-communicated)
+* [**How the information is communicated**](#how-the-information-is-communicated)
   * [GUI → Microcontroller](#gui--microcontroller)
   * [Microcontroller → GUI](#microcontroller--gui)
     * [How build instructions are sent](#how-build-instructions-are-sent)
     * [How the data are reported](#how-the-data-are-reported)
     * [How debug messages are sent](#how-debug-messages-are-sent)
-* [Microcontroller differences](#microcontroller-differences)
+* [**Microcontroller differences**](#microcontroller-differences)
   * [Quick table](#quick-table)
   * [Arduino Uno](#arduino-uno)
   * [Teensy](#teensy)
@@ -89,7 +89,7 @@ The numbers control the rate at which the system operates. `1000` is the time in
 
 ### GUI
 
-The blank GUI page looks like this:
+The GUI is located at `gui/gui.html`. The page initially looks like this:
 
 ![(image of blank gui)](https://i.imgur.com/TJKfr3J.png)
 
@@ -103,13 +103,15 @@ This is default communication mode. To connect, enter a Serial pointer and BAUD 
 cm.connect(&Serial, 115200);
 ```
 
-When you've uploaded your code, run `local_server.py`. It broadcasts your microcontroller's Serial to your localhost (`127.0.0.1`) via WebSockets, making the GUI work. The Python script uses the `websockets` and `pyserial` modules.
+When you've uploaded your code, run `gui/local_server.py`. It broadcasts your microcontroller's Serial to your localhost (`127.0.0.1`) via WebSockets, making the GUI work. The Python script uses the `websockets` and `pyserial` modules.
 
 ![(image of local_server.py in console)](https://i.imgur.com/1DN47zF.png)
 
 ### WebSockets
 
-This is not the default. Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode. This method can only work on the ESP8266 or ESP32. Make sure you have the `WebSockets` library installed (`Manage libraries...` > Search for and install [`WebSockets`](https://github.com/Links2004/arduinoWebSockets) published by Markus Sattler).
+This is not the default. Choose `#define S302_WEBSOCKETS` at the top of `Six302.h` for this mode.
+
+**Note**: This method can only work on the ESP8266 or ESP32. Make sure you have the `WebSockets` library installed (`Manage libraries...` > Search for and install [`WebSockets`](https://github.com/Links2004/arduinoWebSockets) by Markus Sattler).
 
 To connect, enter your SSID and p/w:
 
@@ -296,9 +298,9 @@ Each module starts with a letter to signify the type, follows with the name, and
 * `T` for Toggle
 * `B` for Button
 * `S` for Slider
-<!-- * `J` for Joystick -->
 * `P` for Plot
 * `N` for Numerical reporter
+<!-- * `J` for Joystick -->
 
 Each module, as well as the arguments of each module, are separated by `\r`.
 
@@ -307,22 +309,22 @@ Following the modules is a list of the current values of the controls, denoted b
 For example, the build string for [the code above](#for-example) (the one that adds a toggle, slider, and plot), at initialization, is:
 
 ```plaintext
-\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#true\r0.000000\r\n
+\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#\rtrue\r0.000000\r\n
 ```
 
 If the user changes the value of `input` to `2.96` and they switch the toggle off, and the GUI requests the build string again, then the message sent will change to:
 
 ```plaintext
-\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#false\r2.960000\r\n
+\fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#\rfalse\r2.960000\r\n
 ```
 
 #### How the data are reported
 
 Report messages take the form of `\fR` followed by packs of 4 bytes, where each pack represent a `float` or 32-bit `int` value, closing with `\n`. The bytes are sent in the order they were added in setup, which is precisely the order as they appear in the build string.
 
-Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least\* `4 * _total_reporters` bytes follow, then the closing `\n`.
+Therefore, from the GUI perspective, messages coming in starting with `\fR` will have at least `4 * _total_reporters` bytes follow\*, then the closing `\n`.
 
-\* more than, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
+\* more than this calculation, if reporting modules send multiple data points per report via their respective optional parameters. See [#Reporters](#reporters).
 
 #### How debug messages are sent
 

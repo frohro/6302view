@@ -4,11 +4,11 @@ A setup that allows researchers and learners to interact directly with their mic
 
 [![(system setup)](https://i.imgur.com/djGt0lU.jpg "6302view with Teensy setup")](https://www.youtube.com/watch?v=AaNXcUNaw-I)
 
-Click the image above for a video demonstration.
+The image above links to a video demonstration.
 
 ## Supported microcontrollers
 
-* [Teensy](https://www.pjrc.com/teensy/)
+* [Teensy 3.2](https://www.pjrc.com/teensy/)
 * [ESP8266](https://en.wikipedia.org/wiki/ESP8266)
 * [ESP32](https://www.espressif.com/en/products/hardware/esp32/overview)
 * [Arduino Uno](https://www.arduino.cc/en/guide/BoardAnatomy)
@@ -48,6 +48,10 @@ The above creates a **Slider** called "Input" from 0 to 5 (at a step size of 0.0
 ![(gif of resulting modules)](https://i.imgur.com/THO1Me1.gif)
 
 The system loops at once per 5000 µs (5 ms), and data is reported once per 50000 µs (50 ms).
+
+## Documentation
+
+[Documentation is in `docs.md`.](https://github.com/almonds0166/6302view/blob/master/docs.md)
 
 ## Goals
 
