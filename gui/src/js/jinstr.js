@@ -327,6 +327,7 @@ function MPBuild(intData) {
     var build_array = reshapeDelim(intData, 13); // ~  delim
     console.log(build_array);
     for (var i = 0; i < build_array.length;){
+        console.log(i);
         let newdiv = document.createElement("div"); //new div
         newdiv.setAttribute("id","box_"+String(unique_counter)); 
         div_list.push(newdiv); //push to div list (for DOM management
@@ -341,32 +342,29 @@ function MPBuild(intData) {
                 var high = parseFloat(build_array[i+3]);
                 var res = parseFloat(build_array[i+4]);
                 var toggle = build_array[i+5]==="True"?true:false;
-                var start = parseFloat(build_array[i+6]);
                 user_inputs.push(new Slider(unique_counter,title,low,high,res,toggle));
                 csv_col_headers.push(title);
                 current_inputs.push(0);
                 input_uniques.push(unique_counter);
-                i+=7;
+                i+=6;
                 break;
             case "T": //toggle
                 console.log("building toggle");
                 var title = build_array[i+1];
-                var start = build_array[i+2];
                 csv_col_headers.push(title);
                 user_inputs.push(new Toggle(unique_counter,title));
                 current_inputs.push(0);
                 input_uniques.push(unique_counter);
-                i+=3;
+                i+=2;
                 break;
             case "B": //button
                 console.log("building button");
                 var title = build_array[i+1];
-                var start = build_array[i+2];
                 csv_col_headers.push(title);
                 user_inputs.push(new Button(unique_counter,title));
                 current_inputs.push(0);
                 input_uniques.push(unique_counter);
-                i+=3;
+                i+=2;
                 break;
             case "J": //joystick (NO  CLUE ON HOW TO FORMAT THIS ONE JDS7/30/2019)
                 var title = build_array[i+1];
@@ -415,8 +413,10 @@ function MPBuild(intData) {
                 console.log("found starter");
                 var len = user_inputs.length;
                 var k;
-                for (k=1; k<=len; k++){
-                    user_inputs.update(build_array[i+k]);
+                console.log(user_inputs);
+                for (k=0; k<len; k++){
+                    console.log(user_inputs[k]);
+                    user_inputs[k].update(build_array[i+k+1]);
                 }
                 i+=k+1;
                 break;

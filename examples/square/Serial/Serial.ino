@@ -16,6 +16,7 @@ float output;
 
 void setup() {
    /* Add modules */
+   input = 3.0;
    cm.addSlider(&input, "Input", -5, 5, 0.1);
    cm.addPlot(&output, "Output", -1, 30);
 
