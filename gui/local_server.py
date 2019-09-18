@@ -142,7 +142,6 @@ if args.device:
 
 # Use (actual/commercial) device id
 DEVID = VALID_MCUs[DEV][2]
-print(DEVID)
 print("Ah running {}. Good taste.".format(VALID_MCUs[DEV][1]))
 
 # print("DEBUG::::")
@@ -151,9 +150,6 @@ print("Ah running {}. Good taste.".format(VALID_MCUs[DEV][1]))
 
 print("Starting...")
 time.sleep(0.25) #pause a bit so people feel like it is really starting up
-print(DEV)
-print(VERBOSE)
-print(PORT)
 
 def get_usb_port():
     usb_port = list(serial.tools.list_ports.grep("USB-Serial Controller"))
@@ -223,18 +219,11 @@ async def send_down(message):
     if not serial_connected:
         await connect_serial()
     try:
-<<<<<<< HEAD
-        if DEBUG:
-=======
         msg = message.encode('ascii')
         ser.write(msg)
         if VERBOSE:
->>>>>>> 43b3a4906bf5730976db45f46b40be79433515f2
             print("▼", msg)
-        msg = message.encode('ascii')
-        ser.write(msg)
     except Exception as e:
-        print(msg)
         print("failing on write")
         ser.close()
         serial_connected = False
