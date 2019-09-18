@@ -5,40 +5,98 @@ import datetime
 import websockets
 import serial
 import sys
+import time
+import configparser
 from time import sleep
-
-DEBUG = False
-
-'''Automatically find USB Serial Port
-jodalyst 9/2017
-'''
 import serial.tools.list_ports
 
-PORT = 6302  #needs to be lined up with port specified in file
+config = configparser.ConfigParser()
+config.read('.preferences')
+config['DEFAULTS'] = {'PORT':6302,
+                       'DEV':1,
+                       'DEBUG': 0
+                       }
 
-PREFERENCE_FILE = ".preference"
-DEVID = 5824 #default to Teensy 3.2
+print(config.sections())
+DEBUG = config['DEFAULTS']['DEBUG']
+PORT = config['DEFAULTS']['PORT'] 
+DEVID = 10755
+VALID_DEVS = [0,1,2,3]
 
+# VIDs for various MCU dev boards
+#Arduino Uno: 10755
+#ESP8266: 6790
+#ESP32: 4292
+#Teensy: 5824
+
+
+print("Starting...")
+time.sleep(0.25) #pause a bit so people feel like it is really starting up
+print("Run with -p flag to set preferences\n\n")
 if len(sys.argv)==2:
-    if sys.argv[1] == "-d":
-        print(
+    if sys.argv[1] == "-p":
+        config['PREFS'] = {}
+        print("Welcome to 6302View Configuration.")
+        while True:
+            print(
 """Choose and Enter the number of the Microcontroller you're using:
-(0): Teensy 3.2
-(1): Arduino Uno
-(2): ESP8266 D1 Mini Pro
-(3): ESP32 Dev Module (Si Labs Dev)
+(0): Teensy 3.2 
+(1): Arduino Uno (FTDI chipset)
+(2): ESP8266 D1 Mini Pro (with CH340 Adapter)
+(3): ESP32 Dev Module Rev C(Si Labs Device)
 """)
-        choice = input("")
-        if float(choice) not in [0,1,2,3]:
-            print("invalid device chosen. Switching to default")
-        else:
-            f = open(PREFERENCE_FILE,"w")
-            f.write(choice)
-            f.close()
+            choice = input("")
+            try:
+                if int(choice) not in VALID_DEVS:
+                    print("Invalid Device Chosen. Try again...\n\n")
+                    time.sleep(0.5)
+                else:
+                    config['PREFS']['DEV'] = choice
+                    break
+            except Exception as e: 
+                print(e)
+                print("Invalid Input...\n\n")
+                time.sleep(0.5)
+        print("\n\n")
+        while True:
+            print("Enter the Websocket Port you'd like to use for Python to Browser Communication. Valid choices are 6300-6400.")
+            choice = input("")
+            try:
+                if int(choice) not in list(range(6300,6401)):
+                    print("Invalid Port Chosen. Try again...\n\n")
+                    time.sleep(0.5)
+                else:
+                    config['PREFS']['PORT'] = choice
+                    break
+            except:
+                print("Invalid Input...\n\n")
+                time.sleep(0.5)
+        print("\n\n")
+        while True:
+            print("Python Debugging on? (Warning may slow down system when operating at high data rates). Enter 1 for True, 0 for False")
+            choice = input("")
+            try:
+                choice = int(choice)
+                if choice == 0 or choice == 1:
+                    config['PREFS']['DEBUG'] = str(choice)
+                    break
+                else:
+                    print("Invalid choice. Try again...\n\n")
+                    time.sleep(0.5)
+            except Exception as e:
+                print(e)
+                print("Invalid Input...\n\n")
+                time.sleep(0.5)
+
+with open('.preferences', 'w') as configfile:
+    config.write(configfile)
+
 try:
-    f = open(PREFERENCE_FILE, "r")
-    val = float(f.read())
-    f.close()
+    try:
+        val = config['PREFS']['DEV']
+    except:
+        val = config['DEFAULTS']['DEV']
+    val = int(val)
     if val == 0:
         print("Ah running a Teensy. Good Taste.")
         DEVID = 5824
@@ -52,17 +110,22 @@ try:
         print("Ah running an ESP32. Good Taste.")
         DEVID = 4292
     else:
-        print("Invalid Preference File. Rerun with -d argument. Exiting")
+        print("Invalid Preference File. Rerun with -p argument. Exiting")
         sys.exit()
 except IOError:
-    print("Invalid Preference File. Rerun with -d argument. Exiting")
+    print("Invalid Preference File. Rerun with -p argument. Exiting")
     sys.exit()
 
-# VIDs for various MCU dev boards
-#Arduino Uno: 10755
-#ESP8266: 6790
-#ESP32: 4292
-#Teensy: 5824
+try:
+    PORT = int(config['PREFS']['PORT'])
+except:
+    PORT = int(config['DEFAULTS']['PORT'])
+
+
+try:
+    DEBUG = int(config['PREFS']['DEBUG'])==1
+except:
+    DEBUG  = int(config['DEFAULTS']['DEBUG'])==1
 
 def get_usb_port():
     usb_port = list(serial.tools.list_ports.grep("USB-Serial Controller"))
