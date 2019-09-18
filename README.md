@@ -1,10 +1,10 @@
 # 6302view
 
-**6302view** is a setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design). This software lets the user control and observe their microcontroller's variables in real-time.
-
-[![(system setup)](https://i.imgur.com/djGt0lU.jpg "6302view with Teensy setup")](https://www.youtube.com/watch?v=AaNXcUNaw-I)
+**6302view** is a setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design).
 
 Our goal of this project is to make it elegant -- just include the library and go -- no explicit need to modify anything depending on the microcontroller, for example.
+
+[![(system setup)](https://i.imgur.com/djGt0lU.jpg "6302view with Teensy setup")](https://www.youtube.com/watch?v=AaNXcUNaw-I)
 
 ## Supported microcontrollers
 
