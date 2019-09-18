@@ -6,9 +6,26 @@ import websockets
 import serial
 import sys
 import time
+import argparse
 import configparser
 from time import sleep
 import serial.tools.list_ports
+
+# Command-line arg parser
+parser = argparse.ArgumentParser()
+parser.description = \
+    "Run local server from Serial port for 6302view."
+parser.add_argument("-w", "--wizard",
+    action="store_true",
+    help="change default preferences")
+parser.add_argument("-d", "--device",
+    help="choose microcontroller")
+parser.add_argument("-p", "--port",
+    help="specify websocket port")
+parser.add_argument("-v", "--verbose",
+    action="store_true",
+    help="verbose/debug mode")
+args = parser.parse_args()
 
 config = configparser.ConfigParser()
 config.read('.preferences')
@@ -17,7 +34,7 @@ config['DEFAULTS'] = {'PORT':6302,
                        'DEBUG': 0
                        }
 
-print(config.sections())
+#print(config.sections())
 DEBUG = config['DEFAULTS']['DEBUG']
 PORT = config['DEFAULTS']['PORT'] 
 DEVID = 10755
@@ -29,64 +46,76 @@ VALID_DEVS = [0,1,2,3]
 #ESP32: 4292
 #Teensy: 5824
 
-
-print("Starting...")
-time.sleep(0.25) #pause a bit so people feel like it is really starting up
-print("Run with -p flag to set preferences\n\n")
-if len(sys.argv)==2:
-    if sys.argv[1] == "-p":
-        config['PREFS'] = {}
-        print("Welcome to 6302View Configuration.")
-        while True:
-            print(
+def choose_dev():
+    while True:
+        print(
 """Choose and Enter the number of the Microcontroller you're using:
 (0): Teensy 3.2 
 (1): Arduino Uno (FTDI chipset)
 (2): ESP8266 D1 Mini Pro (with CH340 Adapter)
 (3): ESP32 Dev Module Rev C(Si Labs Device)
 """)
-            choice = input("")
-            try:
-                if int(choice) not in VALID_DEVS:
-                    print("Invalid Device Chosen. Try again...\n\n")
-                    time.sleep(0.5)
-                else:
-                    config['PREFS']['DEV'] = choice
-                    break
-            except Exception as e: 
-                print(e)
-                print("Invalid Input...\n\n")
+        choice = input("")
+        try:
+            if int(choice) not in VALID_DEVS:
+                print("Invalid Device Chosen. Try again...\n\n")
                 time.sleep(0.5)
-        print("\n\n")
-        while True:
-            print("Enter the Websocket Port you'd like to use for Python to Browser Communication. Valid choices are 6300-6400.")
-            choice = input("")
-            try:
-                if int(choice) not in list(range(6300,6401)):
-                    print("Invalid Port Chosen. Try again...\n\n")
-                    time.sleep(0.5)
-                else:
-                    config['PREFS']['PORT'] = choice
-                    break
-            except:
-                print("Invalid Input...\n\n")
+            else:
+                config['PREFS']['DEV'] = choice
+                break
+        except Exception as e: 
+            print(e)
+            print("Invalid Input...\n\n")
+            time.sleep(0.5)
+    print("\n\n")
+
+def choose_port():
+    while True:
+        print("Enter the Websocket Port you'd like to use for Python to Browser Communication. Valid choices are 6300-6400.")
+        choice = input("")
+        try:
+            if int(choice) not in list(range(6300,6401)):
+                print("Invalid Port Chosen. Try again...\n\n")
                 time.sleep(0.5)
-        print("\n\n")
-        while True:
-            print("Python Debugging on? (Warning may slow down system when operating at high data rates). Enter 1 for True, 0 for False")
-            choice = input("")
-            try:
-                choice = int(choice)
-                if choice == 0 or choice == 1:
-                    config['PREFS']['DEBUG'] = str(choice)
-                    break
-                else:
-                    print("Invalid choice. Try again...\n\n")
-                    time.sleep(0.5)
-            except Exception as e:
-                print(e)
-                print("Invalid Input...\n\n")
+            else:
+                config['PREFS']['PORT'] = choice
+                break
+        except:
+            print("Invalid Input...\n\n")
+            time.sleep(0.5)
+    print("\n\n")
+
+def choose_verbose(): 
+    while True:
+        print("Python Debugging on? (Warning may slow down system when operating at high data rates). Enter 1 for True, 0 for False")
+        choice = input("")
+        try:
+            choice = int(choice)
+            if choice in [0, 1]:
+                config['PREFS']['DEBUG'] = str(choice)
+                break
+            else:
+                print("Invalid choice. Try again...\n\n")
                 time.sleep(0.5)
+        except Exception as e:
+            print(e)
+            print("Invalid Input...\n\n")
+            time.sleep(0.5)
+
+print("Starting...")
+time.sleep(0.25) #pause a bit so people feel like it is really starting up
+config['PREFS'] = {}
+
+# Populate ['PREFS']
+if arg.wizard:
+    print("Welcome to 6302View Configuration.")
+    choose_dev()
+    choose_port()
+    choose_verbose()
+else:
+    print("Run with -w flag to set preferences\n")
+    config['PREFS']['DEV'] = 
+    config['PREFS']['DEBUG'] = 1 if args.verbose else 0 # verbose
 
 with open('.preferences', 'w') as configfile:
     config.write(configfile)
@@ -94,6 +123,7 @@ with open('.preferences', 'w') as configfile:
 try:
     try:
         val = config['PREFS']['DEV']
+        val = config.get('PREFS', config['DEFAULTS'])['DEV']
     except:
         val = config['DEFAULTS']['DEV']
     val = int(val)
