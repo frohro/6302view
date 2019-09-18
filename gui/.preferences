@@ -1,0 +1,10 @@
+[DEFAULTS]
+port = 6302
+dev = 1
+debug = 0
+
+[PREFS]
+dev = 0
+port = 6302
+debug = 0
+
