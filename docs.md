@@ -105,9 +105,9 @@ cm.connect(&Serial, 115200);
 
 When you've uploaded your code, run `gui/local_server.py`. It broadcasts your microcontroller's Serial to your localhost (`127.0.0.1`) via WebSockets, making the GUI work. The Python script uses the `websockets` and `pyserial` modules.
 
-![(image of local_server.py in console)](https://i.imgur.com/1DN47zF.png)
+![(console image))](https://i.imgur.com/iTfgD7Q.png)
 
-Make sure to install the `websockets` and `pyserial` modules.
+The script supports command-line arguments, which are best explained by running with the `-h` or `--help` flags.
 
 ### WebSockets
 

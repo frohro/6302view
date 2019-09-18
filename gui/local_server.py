@@ -145,8 +145,8 @@ DEVID = VALID_MCUs[DEV][2]
 print(DEVID)
 print("Ah running {}. Good taste.".format(VALID_MCUs[DEV][1]))
 
-#print("DEBUG::::")
-#for item in [VERBOSE, PORT, DEV, DEVID]:
+# print("DEBUG::::")
+# for item in [VERBOSE, PORT, DEV, DEVID]:
 #    print("{} ({})".format(item, type(item)))
 
 print("Starting...")
@@ -223,7 +223,13 @@ async def send_down(message):
     if not serial_connected:
         await connect_serial()
     try:
+<<<<<<< HEAD
         if DEBUG:
+=======
+        msg = message.encode('ascii')
+        ser.write(msg)
+        if VERBOSE:
+>>>>>>> 43b3a4906bf5730976db45f46b40be79433515f2
             print("▼", msg)
         msg = message.encode('ascii')
         ser.write(msg)
@@ -254,7 +260,7 @@ async def uplink(websocket):
             serial_connected = False
 
         try:
-            if DEBUG and data != b'':
+            if VERBOSE and data != b'':
                 print("▲", data)
             await websocket.send(data)
         except Exception as e:

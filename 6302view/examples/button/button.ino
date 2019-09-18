@@ -14,17 +14,12 @@
 CommManager cm(STEP_TIME, REPORT_TIME);
 
 bool input;
-int32_t output;
-float slido;
+int32_t output = 1;
 
 void setup() {
    
    /* Add modules */
-   output=1;
-   slido = 0.2;
-   //cm.addButton(&input, "Increment");
-   //cm.addSlider(&slido, "Slider");
-   cm.addSlider(&slido, "Left",   -1,   +1, 0.1, false); // true indicates toggle
+   cm.addButton(&input, "Increment");
    cm.addNumber(&output, "Sum");
 
    /* Ready to communicate over Serial */
