@@ -1,10 +1,10 @@
 # 6302view
 
-A setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design). This software lets the user control and observe their microcontroller's variables in real-time.
+A setup that allows researchers and learners to interact directly with their microcontroller in a web browser. Used in MIT subject 6.302 (Feedback system design). This software lets the user control and observe their microcontroller's variables in real-time. The image below links to a video demonstration.
 
 [![(system setup)](https://i.imgur.com/djGt0lU.jpg "6302view with Teensy setup")](https://www.youtube.com/watch?v=AaNXcUNaw-I)
 
-The image above links to a video demonstration.
+The goal of the setup was to be elegant -- just include the library, no need to modify anything depending on the microcontroller, for example.
 
 ## Supported microcontrollers
 
@@ -49,29 +49,6 @@ The above creates a **Slider** called "Input" from 0 to 5 (at a step size of 0.0
 
 The system loops at once per 5000 µs (5 ms), and data is reported once per 50000 µs (50 ms).
 
-## Documentation
-
-[Documentation is in `docs.md`.](https://github.com/almonds0166/6302view/blob/master/docs.md)
-
-## Goals
-
-* To be elegant -- just include the library, no need to modify anything.
-* To support the following microcontrollers:
-   * Teensy
-   * ESP32
-   * ESP8266
-   * Arduino Uno
-* To support the following communication methods:
-   * Over port (pass in your `Serial` and BAUD rate)
-   * Websockets (pass in SSID and p/w)
-
-### Backburner
-
-* Potentially to support the following communication methods:
-   * MQTT instead of websockets
-   * Bluetooth
-   * HTTP (low frequency)
-
 ## Dependencies
 
 ### Arduino libraries used
@@ -86,3 +63,11 @@ Go to `Manage libraries...` and search for `WebSockets`. It's [the one at the bo
 websockets
 pyserial
 ```
+
+## Quick install
+
+
+
+## Documentation
+
+[Documentation is in `docs.md`.](https://github.com/almonds0166/6302view/blob/master/docs.md)

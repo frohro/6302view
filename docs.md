@@ -6,6 +6,9 @@ I've structured this page roughly in order of increasing detail.
 
 * [**Example**](#example)
 * [**Set-up**](#set-up)
+  * [Dependencies](#dependencies)
+    * [Arduino libraries used](#arduino-libraries-used)
+    * [Python modules used](#python-modules-used)
   * [GUI](#gui)
   * [Serial](#serial)
   * [WebSockets](#websockets)
@@ -106,6 +109,8 @@ cm.connect(&Serial, 115200);
 When you've uploaded your code, run `gui/local_server.py`. It broadcasts your microcontroller's Serial to your localhost (`127.0.0.1`) via WebSockets, making the GUI work. The Python script uses the `websockets` and `pyserial` modules.
 
 ![(image of local_server.py in console)](https://i.imgur.com/1DN47zF.png)
+
+Make sure to install the `websockets` and `pyserial` modules.
 
 ### WebSockets
 

@@ -7,14 +7,14 @@ import serial
 import sys
 from time import sleep
 
-DEBUG = True
+DEBUG = False
 
 '''Automatically find USB Serial Port
 jodalyst 9/2017
 '''
 import serial.tools.list_ports
 
-PORT = 6306  #needs to be lined up with port specified in file
+PORT = 6302  #needs to be lined up with port specified in file
 
 PREFERENCE_FILE = ".preference"
 DEVID = 5824 #default to Teensy 3.2
