@@ -21,17 +21,25 @@ parser = argparse.ArgumentParser()
 parser.description = \
     "Run local server from Serial port for 6302view."
 parser.add_argument("-w", "--wizard",
-    action="store_true",
     help="change default preferences")
 parser.add_argument("-d", "--device",
+        default=1,
+        dest ='d', type=int,
         help="""choose microcontroller:"""+MCU_options)
 parser.add_argument("-p", "--port",
+        default=6302,
+    action="store_true",
+       dest='p',type=int, 
     help="specify websocket port")
 parser.add_argument("-v", "--verbose",
     action="store_true",
     help="verbose/debug mode")
 args = parser.parse_args()
 
+print(vars(args))
+print(args.verbose)
+print(args.port)
+print(args.device)
 config = configparser.ConfigParser()
 config.read('.preferences')
 config['DEFAULTS'] = {'PORT':6302,
@@ -106,16 +114,16 @@ time.sleep(0.25) #pause a bit so people feel like it is really starting up
 config['PREFS'] = {}
 
 # Populate ['PREFS']
-if arg.wizard:
+if args.wizard:
     print("Welcome to 6302View Configuration.")
     choose_dev()
     choose_port()
     choose_verbosity()
 else:
     print("Run with -w flag to set preferences\n")
-    config['PREFS']['DEV'] = 0
+    config['PREFS']['DEV'] =  vars(args)['d'] if args.device else 1
     config['PREFS']['DEBUG'] = 1 if args.verbose else 0 # verbose
-    config['PREFS']['PORT'] =  6302 if args.verbose else 0 # verbose
+    config['PREFS']['PORT'] =  vars(args)['p'] if args.port else 6302
 with open('.preferences', 'w') as configfile:
     config.write(configfile)
 
