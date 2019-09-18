@@ -11,6 +11,11 @@ import configparser
 from time import sleep
 import serial.tools.list_ports
 
+MCU_options = """(0): Teensy 3.2 
+(1): Arduino Uno (FTDI chipset)
+(2): ESP8266 D1 Mini Pro (with CH340 Adapter)
+(3): ESP32 Dev Module Rev C(Si Labs Device)"""
+
 # Command-line arg parser
 parser = argparse.ArgumentParser()
 parser.description = \
@@ -19,7 +24,7 @@ parser.add_argument("-w", "--wizard",
     action="store_true",
     help="change default preferences")
 parser.add_argument("-d", "--device",
-    help="choose microcontroller")
+        help="""choose microcontroller:"""+MCU_options)
 parser.add_argument("-p", "--port",
     help="specify websocket port")
 parser.add_argument("-v", "--verbose",
@@ -48,13 +53,7 @@ VALID_DEVS = [0,1,2,3]
 
 def choose_dev():
     while True:
-        print(
-"""Choose and Enter the number of the Microcontroller you're using:
-(0): Teensy 3.2 
-(1): Arduino Uno (FTDI chipset)
-(2): ESP8266 D1 Mini Pro (with CH340 Adapter)
-(3): ESP32 Dev Module Rev C(Si Labs Device)
-""")
+        print(MCU_OPTIONS)
         choice = input("")
         try:
             if int(choice) not in VALID_DEVS:
@@ -85,7 +84,7 @@ def choose_port():
             time.sleep(0.5)
     print("\n\n")
 
-def choose_verbose(): 
+def choose_verbosity(): 
     while True:
         print("Python Debugging on? (Warning may slow down system when operating at high data rates). Enter 1 for True, 0 for False")
         choice = input("")
@@ -111,12 +110,12 @@ if arg.wizard:
     print("Welcome to 6302View Configuration.")
     choose_dev()
     choose_port()
-    choose_verbose()
+    choose_verbosity()
 else:
     print("Run with -w flag to set preferences\n")
-    config['PREFS']['DEV'] = 
+    config['PREFS']['DEV'] = 0
     config['PREFS']['DEBUG'] = 1 if args.verbose else 0 # verbose
-
+    config['PREFS']['PORT'] =  6302 if args.verbose else 0 # verbose
 with open('.preferences', 'w') as configfile:
     config.write(configfile)
 
