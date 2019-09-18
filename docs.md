@@ -6,9 +6,6 @@ I've structured this page roughly in order of increasing detail.
 
 * [**Example**](#example)
 * [**Set-up**](#set-up)
-  * [Dependencies](#dependencies)
-    * [Arduino libraries used](#arduino-libraries-used)
-    * [Python modules used](#python-modules-used)
   * [GUI](#gui)
   * [Serial](#serial)
   * [WebSockets](#websockets)
@@ -96,7 +93,7 @@ The GUI is located at `gui/gui.html`. The page initially looks like this:
 
 ![(image of blank gui)](https://i.imgur.com/TJKfr3J.png)
 
-There are, so far, two modes of communication between the GUI and the microcontroller. Data can be communicated over **Serial**, or by **WebSockets**.
+There are, so far, two modes of communication between the GUI and the microcontroller: data can be communicated over **Serial** or by **WebSockets**.
 
 ### Serial
 
@@ -135,7 +132,7 @@ In this example, in the GUI, you would use `10.0.0.18` for the Local IP and `80`
 
 ### Adding modules
 
-To add controls and reporters, use the following `CommManager` routines.
+To add controls and reporters, use the `CommManager` routines described below.
 
 In general, the order of arguments is:
 
@@ -183,7 +180,7 @@ cm.addButton(&button, "Button");
 
 Add a slider module with `addSlider`.
 
-It takes a pointer to a `float`, a title, followed by the lower end of the range, the higher end of the range, the resolution, all three being `float`s.
+It takes a pointer to a `float`, a title, followed by three `float`s representing the lower end of the range, the higher end of the range, and the resolution.
 
 ```cpp
 // Example slider
@@ -207,13 +204,13 @@ cm.addButton(&input, "Slider", -20, 20, 0.01, true);
 
 #### Reporters
 
-There are currently two ready-to-use reporting modules.
+There are currently two fully-functioning reporting modules.
 
 ##### Plots
 
 Add a plot module with `addPlot`.
 
-It takes a pointer to a `float`, a title, followed by the lower end of y-range and the upper end of the y-range.
+It takes a `float` pointer, a title, and follows with two `float`s representing the lower end of y-range and the upper end of the y-range.
 
 ```cpp
 #include <Six302.h>
@@ -240,19 +237,19 @@ void loop() {
   <img alt="(plot)" src="https://i.imgur.com/ZPP8szI.png">
 </p>
 
-There are three optional parameters for plots.
+There are two optional parameters for plots.
 
 The first changes the number of ticks displayed (default `10`).
 
-The second changes how many data points to send up per report (default `1`). This is useful is you would like to record at a high frequency, while at the same time, to send up a report less occasionally. The recorded data points are as evenly spaced out as possible, step period permitting. This parameter should not be greater than the ratio of the report period to the step period.
+The second changes how many data points to send up per report (default `1`). This is useful if you would like to record at a high frequency, while at the same time, to send up a report less occasionally. The recorded data points are as evenly spaced out as the step period permits. This parameter cannot be greater than the ratio of the report period to the step period.
 
-(The third is under development...)
+<!-- (There is a third parameter under development(maybe)) -->
 
 ##### Numerical reporters
 
 Add a plain number module with `addNumber`.
 
-It first takes a pointer to either a real number (`float`) or a 32-bit integer (`int32_t`/`long int`), and ends with a title.
+It first takes a pointer to either a real number (`float`) or a 32-bit integer (`int32_t`, AKA `long int`), and ends with a title.
 
 ```cpp
 // Example number reporters
@@ -264,7 +261,7 @@ cm.addNumber(&t, "Temperature");
   <img alt="(number)" src="https://i.imgur.com/TyGHUyS.png"> 
 </p>
 
-There is one optional parameter that controls how many data points are recorded per report period, identical to the corresponding optional parameter in [plots](#plots) (default `1`).
+There is one optional parameter that controls how many data points are recorded per report period, identical to the corresponding optional parameter described above for [plots](#plots) (default `1`).
 
 ### `cm.step`
 
