@@ -46,7 +46,8 @@ args = parser.parse_args()
 
 # config parser
 config = configparser.ConfigParser()
-config['PREFS'] = config.get('PREFS', {})
+config['PREFS'] = {}
+config.read('.preferences')
 
 # wizard
 

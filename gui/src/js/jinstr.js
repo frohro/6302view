@@ -81,7 +81,7 @@ window.onload = function(){
         ip = "127.0.0.1";
     }
     if (port==undefined){
-        port = "6306";
+        port = "6302";
     }
     document.getElementById("ipaddress").value = ip;
     document.getElementById("port").value = port;
