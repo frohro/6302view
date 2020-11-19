@@ -144,7 +144,7 @@ document.getElementById("csv_enable").addEventListener("change",function() {
         csv_record = true;
     }else{ //when you shut it off
         csv_record = false;
-        var nameo = document.getElementById("csv_name").value+"_"+String(Date.now()); //bingo was his nameo
+        var nameo = document.getElementById("csv_name").value+"_"+String(Date.now())+".csv"; //bingo was his nameo
         exportCSV(nameo, csv_col_headers, csv_rows);
     }
 });
