@@ -247,6 +247,7 @@ async def uplink(websocket):
             print("failing on read")
             ser.close()
             serial_connected = False
+            await asyncio.sleep(1)
 
         try:
             if VERBOSE and data != b'':
