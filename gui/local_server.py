@@ -212,7 +212,7 @@ async def connect_serial():
              return True
     return False
 
-ser = connect_serial()
+#ser = connect_serial()
 
 async def send_down(message):
     global serial_connected
@@ -267,12 +267,13 @@ async def handler(websocket, path):
     done, pending = await asyncio.wait([page2mcu,mcu2page],return_when=asyncio.FIRST_COMPLETED)
     for task in pending:
         task.cancel()
-try:
+
+async def main():
     server = websockets.serve(handler, "127.0.0.1", PORT)
-    asyncio.get_event_loop().run_until_complete(server)
-    asyncio.get_event_loop().run_forever()
-except KeyboardInterrupt:
-    print('\nCtrl-C')
-finally:
-    server.close()
-    asyncio.get_event_loop.close()
+    async with server: await asyncio.Future()
+    
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nCtrl-C")

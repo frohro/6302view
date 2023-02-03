@@ -55,11 +55,11 @@ The system loops at once per 5000 µs (5 ms), and data is reported once per 5000
 
 2. Copy the `6302view/` folder that contains the C/C++ library to your [Arduino libraries folder](https://www.arduino.cc/en/guide/libraries).
    * On Windows and Mac, the folder is usually named `libraries/` and is located in `Arduino/` in your Documents folder.
-   * On Linux, the folder is usually named `Sketchbook/` and located in `/home/`.
+   * On Linux, the folder is sometimes named `Sketchbook/` and located in your home folder.
 
 3. Install the Python dependencies `websockets` and `pyserial` using `pip`.
 
-To run the local server, run `local_server.py`, located in `gui/`, with a Python version of at least 3.5. Finally, open `gui.html` in your favorite web browser.
+To run the local server, run `local_server.py`, located in `gui/`, with a Python version of at least 3.7. Finally, open `gui.html` in your favorite web browser.
 
 ## Dependencies
 
