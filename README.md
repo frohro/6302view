@@ -59,7 +59,7 @@ The system loops at once per 5000 µs (5 ms), and data is reported once per 5000
 
 3. Install the Python dependencies `websockets` and `pyserial` using `pip`.
 
-To run the local server, run `local_server.py`, located in `gui/`, with a Python version of at least 3.7. Finally, open `gui.html` in your favorite web browser.
+To run the local server, run `local_server.py`, located in `gui/`, with a Python version of at least **3.8**. Finally, open `gui.html` in your favorite web browser.
 
 ## Dependencies
 
