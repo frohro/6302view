@@ -308,7 +308,7 @@ Each module, as well as the arguments of each module, are separated by `\r`.
 
 Following the modules is a list of the current values of the controls, denoted by the `#` symbol. Each value is followed by `\r`. This list ends with the finalizing `\n`.
 
-For example, the build string for [the code above](#for-example) (the one that adds a toggle, slider, and plot), at initialization, is:
+For example, the build string for [the code above](#example) (the one that adds a toggle, slider, and plot), at initialization, is:
 
 ```plaintext
 \fBT\rAdd ten\rS\rInput\r-5.000000\r5.000000\r0.010000\rFalse\rP\rOutput\r0.000000\r35.000000\r10\r1\r1\r#\rtrue\r0.000000\r\n
