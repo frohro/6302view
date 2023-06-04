@@ -154,7 +154,7 @@ It takes only a `bool` pointer and a title.
 
 ```cpp
 // Example toggle
-cm.addButton(&toggle, "Toggle");
+cm.addToggle(&toggle, "Toggle");
 ```
 
 <p align="center">
@@ -184,7 +184,7 @@ It takes a pointer to a `float`, a title, followed by three `float`s representin
 
 ```cpp
 // Example slider
-cm.addButton(&input, "Slider", -20, 20, 0.01);
+cm.addSlider(&input, "Slider", -20, 20, 0.01);
 ```
 
 <p align="center">
@@ -195,7 +195,7 @@ An optional sixth parameter controls whether you'd like the slider to toggle bet
 
 ```cpp
 // Example alternating slider
-cm.addButton(&input, "Slider", -20, 20, 0.01, true);
+cm.addSlider(&input, "Slider", -20, 20, 0.01, true);
 ```
 
 <p align="center">
