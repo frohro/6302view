@@ -10,21 +10,34 @@ function Button(unique,title,color=null,bg_color=null){
     var holder;
     var button_element;
     var setup = function(){
-        //var button_title = document.createElement("div");
-        //button_title.innerHTML=title;
-        var handle = document.createElement("div");
-        handle.setAttribute("class","handle");
         holder = document.createElement("div");
         holder.setAttribute("id", div_id+unique+"_holder");
         holder.setAttribute("class", "button_holder");
-        //holder.appendChild(button_title);
-        overall_div.appendChild(handle);
-        overall_div.appendChild(holder);
+
+        // fix for when we want to allow dragging
+        // but also button clicking
+        // without collisions
+        var topHandle = document.createElement("div");
+        topHandle.setAttribute("class", "handle top_handle");
+        holder.appendChild(topHandle)
+        var leftHandle = document.createElement("div");
+        leftHandle.setAttribute("class", "handle left_handle");
+        holder.appendChild(leftHandle)
+
         button_element = document.createElement("button");
         button_element.setAttribute("class","gui_button");
         button_element.setAttribute("id",div_id+unique+"button");
         button_element.innerHTML = title;
         holder.appendChild(button_element);
+
+        var rightHandle = document.createElement("div");
+        rightHandle.setAttribute("class", "handle right_handle");
+        holder.appendChild(rightHandle)
+        var bottomHandle = document.createElement("div");
+        bottomHandle.setAttribute("class", "handle bottom_handle");
+        holder.appendChild(bottomHandle)
+
+        overall_div.appendChild(holder);
            
         if (bg_color===null || color===null){
             console.log("no color");

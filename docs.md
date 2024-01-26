@@ -4,32 +4,33 @@
 
 I've structured this page roughly in order of increasing detail.
 
-* [**Example**](#example)
-* [**Set-up**](#set-up)
-  * [GUI](#gui)
-  * [Serial](#serial)
-  * [WebSockets](#websockets)
-  * [Adding modules](#adding-modules)
-    * [Controls](#controls)
-      * [Toggles](#toggles)
-      * [Buttons](#buttons)
-      * [Sliders](#sliders)
-    * [Reporters](#reporters)
-      * [Plots](#plots)
-      * [Numerical reporters](#numerical-reporters)
-  * [`cm.step`](#cmstep)
-* [**How the information is communicated**](#how-the-information-is-communicated)
-  * [GUI → Microcontroller](#gui--microcontroller)
-  * [Microcontroller → GUI](#microcontroller--gui)
-    * [How build instructions are sent](#how-build-instructions-are-sent)
-    * [How the data are reported](#how-the-data-are-reported)
-    * [How debug messages are sent](#how-debug-messages-are-sent)
-* [**Microcontroller differences**](#microcontroller-differences)
-  * [Quick table](#quick-table)
-  * [Arduino Uno](#arduino-uno)
-  * [Teensy](#teensy)
-  * [ESP8266](#esp8266)
-  * [ESP32](#esp32)
+[**Example**](#example)<br>
+[**Set-up**](#set-up)<br>
+&emsp;&emsp;[Using 6302view in a sketch](#using-6302view-in-a-sketch)<br>
+&emsp;&emsp;[GUI](#gui)<br>
+&emsp;&emsp;[Serial](#serial)<br>
+&emsp;&emsp;[WebSockets](#websockets)<br>
+&emsp;&emsp;[Adding modules](#adding-modules)<br>
+&emsp;&emsp;&emsp;&emsp;[Controls](#controls)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[Toggles](#toggles)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[Buttons](#buttons)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[Sliders](#sliders)<br>
+&emsp;&emsp;&emsp;&emsp;[Reporters](#reporters)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[Plots](#plots)<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[Numerical reporters](#numerical-reporters)<br>
+&emsp;&emsp;[`cm.step`](#cmstep)<br>
+[**How the information is communicated**](#how-the-information-is-communicated)<br>
+&emsp;&emsp;[GUI → Microcontroller](#gui--microcontroller)<br>
+&emsp;&emsp;[Microcontroller → GUI](#microcontroller--gui)<br>
+&emsp;&emsp;&emsp;&emsp;[How build instructions are sent](#how-build-instructions-are-sent)<br>
+&emsp;&emsp;&emsp;&emsp;[How the data are reported](#how-the-data-are-reported)<br>
+&emsp;&emsp;&emsp;&emsp;[How debug messages are sent](#how-debug-messages-are-sent)<br>
+[**Microcontroller differences**](#microcontroller-differences)<br>
+&emsp;&emsp;[Quick table](#quick-table)<br>
+&emsp;&emsp;[Arduino Uno](#arduino-uno)<br>
+&emsp;&emsp;[Teensy](#teensy)<br>
+&emsp;&emsp;[ESP8266](#esp8266)<br>
+&emsp;&emsp;[ESP32](#esp32)<br>
 
 ## Example
 
@@ -76,6 +77,17 @@ This `.ino` creates two controls (a toggle and a slider) and one reporter (a plo
 Above is what the example renders to in the GUI, with the slider modified and the toggle switched off less than a second beforehand.
 
 ## Set-up
+
+[Download this repo](https://github.com/almonds0166/6302view/archive/master.zip) and extract the contents to an unzipped folder. Copy the inner `6302view/` folder that contains the C/C++ library to your [Arduino libraries folder](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
+
+Default libraries folder locations:
+* Windows: `C:\Users{username}\Documents\Arduino\libraries` \*
+* macOS: `/Users/{username}/Documents/Arduino/libraries`
+* Linux: `/home/{username}/Arduino/libraries`
+
+\* = If you use OneDrive on your Windows computer, then it will probably be located at `C:\Users\{username}\OneDrive\Documents\Arduino\libraries` instead.
+
+### Using 6302view in a sketch
 
 Start off including the library and creating an instance of the `CommManager` class.
 
@@ -265,7 +277,7 @@ There is one optional parameter that controls how many data points are recorded 
 
 ### `cm.step`
 
-`cm.step` updates the inputs, reports the outputs, and conveniently blocks according to your given loop rate (e.g. the 1000 microseconds below).
+`cm.step` updates the inputs, reports the outputs, and conveniently blocks according to your given loop rate (e.g. the 5000 microseconds from [above](#example)).
 
 ```cpp
 void loop() {
@@ -379,4 +391,4 @@ The ESP8266 is practically the same as the Teensy, except it supports communicat
 
 Because the ESP32 has a second core, it is desirable to run the `CommManager` over there, rather than on the primary core, to open up headroom. `cm.step` in your `loop` routine will still work; however, it's only sugar offering timing control. `cm.headroom()` returns the headroom for your `loop` routine because it is likely to be more useful than the headroom for the task running on the second core, which is generally constant around six microseconds off of the step period.
 
-The ESP32 also supports communication over WebSockets.
+The ESP32 also supports communication over WebSockets, like the ESP8266.

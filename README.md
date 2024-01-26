@@ -53,9 +53,7 @@ The system loops at once per 5000 µs (5 ms), and data is reported once per 5000
 
 1. [Download this repo](https://github.com/almonds0166/6302view/archive/master.zip) and extract the contents to an unzipped folder.
 
-2. Copy the `6302view/` folder that contains the C/C++ library to your [Arduino libraries folder](https://www.arduino.cc/en/guide/libraries).
-   * On Windows and Mac, the folder is usually named `libraries/` and is located in `Arduino/` in your Documents folder.
-   * On Linux, the folder is sometimes named `Sketchbook/` and located in your home folder.
+2. Copy the inner `6302view/` folder that contains the C/C++ library to your [Arduino libraries folder](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer).
 
 3. Install the Python dependencies `websockets` and `pyserial` using `pip`.
 
@@ -65,7 +63,7 @@ To run the local server, run `local_server.py`, located in `gui/`, with a Python
 
 ### Python modules used
 
-*Only required for communication over Serial.*
+*Only required if using `local_server.py` for communication over Serial.*
 
 ```plaintext
 websockets

@@ -1,46 +1,80 @@
 <!doctype html>
 <html>
 <head>
+	<title>6302view Control Panel</title>
 </head>
-
 <body>
-<h1>6302View</h1>
-<!-- <p><i>Enter the IP address printed from your microcontroller's Serial readout here, press Submit/Connect, and start working.</i></p>
- -->
-<div style="height:80px; display: flex; justify-content: space-evenly;align-items:center;">
-	<div style="float:left;width:300px; display: flex; justify-content: space-evenly;align-items:center;">
-		Local IP: <input type="text" name="ipaddress" id="ipaddress" value="127.0.0.1" style="width:60px;"/>
-		Port: <input type="text" name="port" id="port" val="80" style="width:60px;"/>
-		<div>
-			<button id="ipportsubmit" style="vertical-align:middle"><span>(Re)Connect</span></button>
-		</div>
-	</div>
-	<div style="float:left;width:150px; display: flex; justify-content: space-evenly;align-items:center;">
-		<div id="grid_status" style="width:100px;">Grid Locked</div>
-		<div style="width:100px;">
-			<div class="ckbx-style-8">
-    			<input type="checkbox" id="grid_lock" name="hey">
-    			<label for="grid_lock"></label>
-			</div>
-		</div>
-	</div>
-	<div style="float:left;width:150px; display: flex; justify-content: space-evenly;align-items:center;">
-		<div style="width:100px;">CSV Generate?</div>
-		<div style="width:100px;">
-    		<div class="ckbx-style-8">
-        		<input type="checkbox" id="csv_enable" value="1" name="csv_enable">
-        		<label for="csv_enable"></label>
-    		</div>
-		</div>
-	</div>
-	<div style="float:left;width:300px;">
-    	CSV Name: <input type="text" name="csv_name" id="csv_name"/>
-	</div>
-</div>
 
-<div id="gui_land" class="cp">
-</div>
+<!-- Heading, (re)connect button, and dark mode toggle -->
+<table width="100%"><tr>
+	<td style="padding-right: 1ch;"><h1>6302View</h1></td>
+	<td style="float: right;">
+		<table><tr>
+		<td style="padding-right: 1ch;"><button id="ipportsubmit" style="vertical-align: middle; padding: 5px;"><span>(Re)Connect</span></button></td>
+		<td>
+			<table><tr>
+			<td><label>Dark</label></td>
+			<td><div class="ckbx-style-7" title="Dark mode/light mode">
+	 			<input type="checkbox" id="darkmode_toggle" checked name="hey">
+	 			<label for="darkmode_toggle"></label>
+			</div></td>
+			<td><label>&nbsp;Light</label></td>
+			</tr></table>
+		</td>
+		</tr></table>
+	</td>
+</tr></table>
 
+<!-- WebSocket controls -->
+<details>
+	<summary title="Click to reveal/hide WebSocket settings">WebSocket server controls</summary>
+	<p>Enter the IP address printed from your ESP's Serial readout here, press "(Re)Connect", and start working.</p>
+	<div style="width: 400px; display: flex; justify-content: space-evenly;align-items:center;">
+		<label>Local IP:&nbsp;</label><input type="text" name="ipaddress" id="ipaddress" value="127.0.0.1" style="width: 90px;"/>
+		<label>Port:&nbsp;</label><input type="text" name="port" id="port" val="80" style="width: 90px;"/>
+	</div>
+	<br>
+	<div style="height: 1px; background-color: gray;"></div>
+	<br>
+</details>
+
+<!-- CSV controls -->
+<details>
+	<summary title="Click to reveal/hide CSV controls">CSV controls</summary>
+	<br>
+	<table><tr>
+	<td><label>Generate CSV?</label></td>
+		<td><div class="ckbx-style-13" style="margin-right: 20px;">
+  		<input type="checkbox" id="csv_enable" value="1" name="csv_enable">
+  		<label for="csv_enable"></label>
+  	</div></td>
+  	<td style="padding-left: 1ch;"><label>CSV name:</label></td>
+  	<td><input type="text" name="csv_name" id="csv_name"/></td>
+   </tr></table>
+	<br>
+	<div style="height: 1px; background-color: gray;"></div>
+</details>
+
+<!-- Grid controls -->
+<table style="margin: 10px auto;"><tr>
+	<td title="To move modules around the grid, click and drag a module's title text">
+		<table><tr>
+		<td><label>Grid Unlocked</label></td>
+		<td><div class="ckbx-style-13">
+ 			<input type="checkbox" id="grid_lock">
+ 			<label for="grid_lock"></label>
+		</div></td>
+		<td><label>&nbsp;Locked</label></td>
+		</tr></table>
+	</td>
+</tr></table>
+
+<!-- Control panel -->
+<div id="gui_land" class="cp"></div>
+<br>
+<br>
+<br>
+<br>
 
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="./src/js/packery.pkgd.min.js"></script>

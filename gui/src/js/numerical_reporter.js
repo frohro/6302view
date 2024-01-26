@@ -15,7 +15,7 @@ function Numerical_Reporter(unique,title,data_type,color=null,bg_color=null){
         f32[0] = value;
         //console.log(data_type);
         if (data_type==="float"){
-            return f32[0];
+            return f32[0].toPrecision(12);
         } else{
             return i32[0];
         }
@@ -27,7 +27,7 @@ function Numerical_Reporter(unique,title,data_type,color=null,bg_color=null){
     holder.setAttribute("class", "number_holder");
     var title_disp = document.createElement('div');
     title_disp.setAttribute("id",div_id+unique+"_title");
-    title_disp.setAttribute("class","number_title");
+    title_disp.setAttribute("class","handle number_title");
     title_disp.innerHTML=title;
     holder.appendChild(title_disp);
     overall_div.appendChild(holder);

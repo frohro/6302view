@@ -6,7 +6,7 @@ var ready_to_fire = true;
 var isActive = true;
 
 //Use these when laying out colors!
-var standard_colors = ["blue","red","green","yellow","purple"];
+var standard_colors = ["#D81B60","#FFC107","#009F6B","#1E88E5","#785EF0"];
 var mouseX=0;
 var mouseY = 0;
 document.addEventListener("mousemove",function(e){
@@ -144,7 +144,9 @@ document.getElementById("csv_enable").addEventListener("change",function() {
         csv_record = true;
     }else{ //when you shut it off
         csv_record = false;
-        var nameo = document.getElementById("csv_name").value+"_"+String(Date.now())+".csv"; //bingo was his nameo
+        var nameo = document.getElementById("csv_name").value;
+        nameo += nameo.length == 0? "" : "_"
+        nameo += String(Date.now())+".csv"; //bingo was his nameo
         exportCSV(nameo, csv_col_headers, csv_rows);
     }
 });
@@ -333,8 +335,8 @@ function MPBuild(intData) {
         console.log(i);
         let newdiv = document.createElement("div"); //new div
         newdiv.setAttribute("id","box_"+String(unique_counter)); 
+        newdiv.setAttribute("class","handle cp-item");
         div_list.push(newdiv); //push to div list (for DOM management
-        newdiv.setAttribute("class","cp-item");
         gui_land.appendChild(newdiv);
         let whichFrob = build_array[i];
         switch (whichFrob){ // 
@@ -392,7 +394,7 @@ function MPBuild(intData) {
                 report_count.push(trace_count);
                 report_depth.push(trace_depth);
                 if (trace_count ===1){
-                    displayers.push(new Time_Series(unique_counter,title,PLOT_WIDTH,PLOT_HEIGHT,h_count,[v_low,v_high],1,["blue"]));
+                    displayers.push(new Time_Series(unique_counter,title,PLOT_WIDTH,PLOT_HEIGHT,h_count,[v_low,v_high],1,[standard_colors[0]]));
                     csv_col_headers.push(title);
                 }else{
                     var colors = standard_colors.slice(0,trace_count+1);
@@ -408,7 +410,7 @@ function MPBuild(intData) {
                 var type = build_array[i+3];
                 report_count.push(1);
                 report_depth.push(depth);
-                displayers.push(new Numerical_Reporter(unique_counter,title,type,"red","black"));
+                displayers.push(new Numerical_Reporter(unique_counter,title,type));
                 csv_col_headers.push(title);
                 i+=4;
                 break;
@@ -473,10 +475,9 @@ var exportCSV = function(filename, headers, rows) {
 }
 
 
-
 var pckry;
 var draggies = [];
-var isDrag = false;
+var isDrag = true;
 
 //window.addEventListener("load", function(){
 document.addEventListener("field_built",function(){
@@ -489,8 +490,9 @@ document.addEventListener("field_built",function(){
     var draggie = new Draggabilly( itemElem ,{handle:'.handle'});
     draggies.push(draggie);
     pckry.bindDraggabillyEvents( draggie );
-    draggie['disable']();
+    draggie.enable();
   });
+  checkDarkModeToggle();
 
 });
 
@@ -531,23 +533,58 @@ function throttle(func, wait, options) {
 
 document.getElementById("grid_lock").addEventListener("change",function() {
     // check if checkbox is checked
-    var method = isDrag ? 'disable' : 'enable';
     draggies.forEach( function( draggie ) {
-        draggie[ method ]();
+        if(isDrag) draggie.disable();
+        else draggie.enable();
     });
     // switch flag
     isDrag = !isDrag;
-    if (isDrag){
-        document.getElementById("grid_status").innerHTML = "Grid UnLocked";
-    }else{
-        document.getElementById("grid_status").innerHTML = "Grid Locked";
-    }
-    /*if (document.querySelector('#my-checkbox').checked) {
-      // if checked
-      console.log('checked');
-    } else {
-      // if unchecked
-      console.log('unchecked');
-    }*/
   });
+
+//
+// Dark mode stuff
+//
+function lightMode() {
+    let element = document.body;
+    element.className = "light-mode";
+    document.querySelectorAll(".cp-item").forEach(element => {
+        element.classList.remove("dark-mode");
+        element.classList.add("light-mode");
+    });
+    document.querySelectorAll(".tick").forEach(element => {
+        element.classList.remove("dark-mode");
+        element.classList.add("light-mode");
+    });
+    document.querySelectorAll(".reported_number").forEach(element => {
+        element.classList.remove("dark-mode");
+        element.classList.add("light-mode");
+    });
+}
+function darkMode() {
+    let element = document.body;
+    element.className = "dark-mode";
+    document.querySelectorAll(".cp-item").forEach(element => {
+        element.classList.remove("light-mode");
+        element.classList.add("dark-mode");
+    });
+    document.querySelectorAll(".tick").forEach(element => {
+        element.classList.remove("light-mode");
+        element.classList.add("dark-mode");
+    });
+    document.querySelectorAll(".reported_number").forEach(element => {
+        element.classList.remove("light-mode");
+        element.classList.add("dark-mode");
+    });
+}
+
+let darkModeToggle = document.getElementById("darkmode_toggle");
+checkDarkModeToggle = function() {
+    let darkModeEnabled = darkModeToggle.checked === false;
+    if( darkModeEnabled ) darkMode();
+    else lightMode();
+};
+darkModeToggle.addEventListener("change", checkDarkModeToggle);
+checkDarkModeToggle();
+
+
 

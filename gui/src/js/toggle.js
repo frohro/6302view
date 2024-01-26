@@ -15,7 +15,7 @@ function Toggle(unique,title,names=["OFF","ON"]){
         var overall_div = document.getElementById(div_id);
         holder = document.createElement('div');
         holder.setAttribute("id", div_id+unique+"_holder");
-        holder.setAttribute("class", "toggle_holder");
+        holder.setAttribute("class", "handle");
         overall_div.appendChild(holder);
         title_disp = document.createElement('div');
         value_div = document.createElement('div');
@@ -26,7 +26,7 @@ function Toggle(unique,title,names=["OFF","ON"]){
         value_div.innerHTML = names[0];
         value_div.setAttribute("class","toggle_value");
         slider = document.createElement('div');
-        slider.setAttribute("class","ckbx-style-8");
+        slider.setAttribute("class","ckbx-style-13");
         slider_input = document.createElement('input');
         slider_input.setAttribute("type","checkbox");
         slider_input.setAttribute("name",div_id+unique+"_checkbox");
@@ -38,9 +38,9 @@ function Toggle(unique,title,names=["OFF","ON"]){
         holder.setAttribute("class", "toggle");
         holder.appendChild(title_disp);
         holder.appendChild(value_div);
-        holder.appendChild(slider);
         slider.appendChild(slider_input);
         slider.appendChild(label);
+        holder.appendChild(slider);
         built = true;
          
     }
@@ -59,7 +59,8 @@ function Toggle(unique,title,names=["OFF","ON"]){
     var checko = function(element){
         ///value_div.innerHTML = names[slider_input.checked?1:0];
         //var local_change = new CustomEvent('ui_change',{unique:slider_input.checked});
-        //document.dispatchEvent(local_change);     
+        //document.dispatchEvent(local_change);
+        value_div.innerHTML = names[slider_input.checked?1:0];
         var local_change = new CustomEvent('ui_change',{detail:{"message":String(unique)+":"+String(slider_input.checked)}});
         document.dispatchEvent(local_change);         
     }     
