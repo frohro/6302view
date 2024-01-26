@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+
+# type checking and organization
+from __future__ import annotations
+import typing
+from dataclasses import dataclass
 
 # standard library
 import asyncio
@@ -36,23 +42,19 @@ except ModuleNotFoundError:
     print("")
     raise
 
-# type checking and organization
-import typing
-from dataclasses import dataclass
-
 @dataclass(frozen=True)
 class MCU:
-    device_id: int
+    vendor_ids: set[int]
     name: str
     nickname: str
     nickname_determiner: str
 
 # Supported device IDs
 VALID_MCUs: typing.List[MCU] = [
-    MCU(5824, "Teensy 3.2", "Teensy", "a Teensy"),
-    MCU(10755, "Arduino Uno (FTDI chipset)", "Arduino Uno", "an Uno"),
-    MCU(6790, "ESP8266 D1 Mini Pro (with CH340 Adapter)", "ESP8266", "an ESP8266"),
-    MCU(4292, "ESP32 Dev Module Rev C(Si Labs Device)", "ESP32", "an ESP32"),
+    MCU({5824}, "Teensy 3.2", "Teensy", "a Teensy"),
+    MCU({10755, 9025}, "Arduino Uno (FTDI chipset)", "Arduino Uno", "an Uno"),
+    MCU({6790}, "ESP8266 D1 Mini Pro (with CH340 Adapter)", "ESP8266", "an ESP8266"),
+    MCU({4292}, "ESP32 Dev Module Rev C(Si Labs Device)", "ESP32", "an ESP32"),
 ]
 
 DEVICE_LIST: str = \
@@ -245,12 +247,13 @@ class Handler:
         
         # alternative
         ports = list(serial.tools.list_ports.comports())
-        device_id = self.preferences.mcu.device_id
-        print(f"Found {len(ports)} port(s), looking for {BLUE}{device_id}{RESET}...")
+        vendor_ids = self.preferences.mcu.vendor_ids
+        these_vendor_ids = ", ".join(f"{BLUE}{vid}{RESET}" for vid in vendor_ids)
+        print(f"Found {len(ports)} port(s), looking for {these_vendor_ids}...")
         ports_found = []
         for i, port in enumerate(ports):
             ports_found.append(f"   {i}: {port} (Vendor ID: {BLUE}{port.vid}{RESET})")
-            if port.vid == device_id: # one type of Teensy might have unexpected vendor id?
+            if port.vid in vendor_ids:
                 break
         else:
             print("\nI couldn't find your chosen device! D:")
@@ -260,11 +263,11 @@ class Handler:
                 print()
             supported_ports = [
                 p for p in ports
-                if any(mcu.device_id == p.vid for mcu in VALID_MCUs)
+                if any(p.vid in mcu.vendor_ids for mcu in VALID_MCUs)
             ]
             if supported_ports:
                 for mcu in VALID_MCUs:
-                    if mcu.device_id == supported_ports[0].vid:
+                    if supported_ports[0].vid in mcu.vendor_ids:
                         if self.preferences.device_from_config_file:
                             print((
                                 f"Your preferences told me to look for {self.preferences.mcu.nickname_determiner}, "

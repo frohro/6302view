@@ -83,7 +83,13 @@ bool CommManager::addToggle(bool* linker, const char* title) {
       return false;
       
    _controls[_total_controls++] = (float*)linker;
+#ifdef S302_UNO
+   strcpy(_buf, "T\r");
+   strncat(_buf, title, MAX_TITLE_LEN);
+   strcat(_buf, "\r");
+#else
    sprintf(_buf, "T\r%.*s\r", MAX_TITLE_LEN, title);
+#endif
    strcat(_build_string, _buf);
    
    return true;
@@ -96,9 +102,15 @@ bool CommManager::addButton(bool* linker, const char* title) {
       return false;
       
    _controls[_total_controls++] = (float*)linker;
+#ifdef S302_UNO
+   strcpy(_buf, "B\r");
+   strncat(_buf, title, MAX_TITLE_LEN);
+   strcat(_buf, "\r");
+#else
    sprintf(_buf, "B\r%.*s\r", MAX_TITLE_LEN, title);
+#endif
    strcat(_build_string, _buf);
-   
+
    return true;
 }
 
@@ -113,21 +125,26 @@ bool CommManager::addSlider(float* linker, const char* title,
    _controls[_total_controls] = linker;
    _ctrl_types[_total_controls++] = true; // float
 #ifdef S302_UNO
+   strcpy(_buf, "S\r");
+   strncat(_buf, title, MAX_TITLE_LEN);
+   strcat(_buf, "\r");
    dtostrf(range_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "S\r%.*s\r%s\r", MAX_TITLE_LEN, title, _tmp);
-   strcat(_build_string, _buf);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\r");
    dtostrf(range_max, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "%s\r", _tmp);
-   strcat(_build_string, _buf);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\r");
    dtostrf(resolution, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "%s\r%s", _tmp, toggle? "True":"False");
-   strcat(_build_string, _buf);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\r");
+   strcat(_buf, toggle? "True":"False");
+   strcat(_buf, "\r");
 #else
    sprintf(_buf, "S\r%.*s\r%f\r%f\r%f\r%s\r",
       MAX_TITLE_LEN, title, range_min, range_max,
       resolution, toggle? "True":"False");
-   strcat(_build_string, _buf);
 #endif
+   strcat(_build_string, _buf);
    
    return true;
 }
@@ -189,19 +206,30 @@ bool CommManager::addPlot(float* linker, const char* title,
    _reporters[_total_reporters] = linker;
    _bursts[_total_reporters++] = burst;
 #ifdef S302_UNO
+   strcpy(_buf, "P\r");
+   strncat(_buf, title, MAX_TITLE_LEN);
+   strcat(_buf, "\r");
    dtostrf(yrange_min, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "P\r%.*s\r%s\r", MAX_TITLE_LEN, title, _tmp);
-   strcat(_build_string, _buf);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\r");
    dtostrf(yrange_max, 0, MAX_PREC, _tmp);
-   sprintf(_buf, "%s\r%d\r%d\r%d\r",
-      _tmp, steps_displayed, burst, num_plots);
-   strcat(_build_string, _buf);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\r");
+   itoa(steps_displayed, _tmp, 10);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\r");
+   itoa(burst, _tmp, 10);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\r");
+   itoa(num_plots, _tmp, 10);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\r");
 #else
    sprintf(_buf, "P\r%.*s\r%f\r%f\r%d\r%d\r%d\r",
       MAX_TITLE_LEN, title, yrange_min, yrange_max,
       steps_displayed, burst, num_plots);
-   strcat(_build_string, _buf);
 #endif
+   strcat(_build_string, _buf);
    
    return true;
 }
@@ -218,8 +246,17 @@ bool CommManager::addNumber(float* linker,
       
    _reporters[_total_reporters] = linker;
    _bursts[_total_reporters++] = burst;
+#ifdef S302_UNO
+   strcpy(_buf, "N\r");
+   strncat(_buf, title, MAX_TITLE_LEN);
+   strcat(_buf, "\r");
+   itoa(burst, _tmp, 10);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\rfloat\r");
+#else
    sprintf(_buf, "N\r%.*s\r%d\rfloat\r",
       MAX_TITLE_LEN, title, burst);
+#endif
    strcat(_build_string, _buf);
    
    return true;
@@ -235,8 +272,17 @@ bool CommManager::addNumber(int32_t* linker,
 
    _reporters[_total_reporters] = (float*)linker;
    _bursts[_total_reporters++] = burst;
+#ifdef S302_UNO
+   strcpy(_buf, "N\r");
+   strncat(_buf, title, MAX_TITLE_LEN);
+   strcat(_buf, "\r");
+   itoa(burst, _tmp, 10);
+   strcat(_buf, _tmp);
+   strcat(_buf, "\rint\r");
+#else
    sprintf(_buf, "N\r%.*s\r%d\rint\r",
       MAX_TITLE_LEN, title, burst);
+#endif
    strcat(_build_string, _buf);
 
    return true;
