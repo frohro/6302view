@@ -10,6 +10,7 @@ I've structured this page roughly in order of increasing detail.
 &emsp;&emsp;[GUI](#gui)<br>
 &emsp;&emsp;[Serial](#serial)<br>
 &emsp;&emsp;[WebSockets](#websockets)<br>
+[**Primary commands**](#primary-commands)<br>
 &emsp;&emsp;[Adding modules](#adding-modules)<br>
 &emsp;&emsp;&emsp;&emsp;[Controls](#controls)<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[Toggles](#toggles)<br>
@@ -18,7 +19,8 @@ I've structured this page roughly in order of increasing detail.
 &emsp;&emsp;&emsp;&emsp;[Reporters](#reporters)<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[Plots](#plots)<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;[Numerical reporters](#numerical-reporters)<br>
-&emsp;&emsp;[`cm.step`](#cmstep)<br>
+&emsp;&emsp;[`cm.step`: Loop control](#cmstep)<br>
+&emsp;&emsp;[`cm.pinToCore`: Dual core on the ESP32](#dual-core)<br>
 [**How the information is communicated**](#how-the-information-is-communicated)<br>
 &emsp;&emsp;[GUI → Microcontroller](#gui--microcontroller)<br>
 &emsp;&emsp;[Microcontroller → GUI](#microcontroller--gui)<br>
@@ -142,6 +144,10 @@ Connecting to Mom use this one WiFi .. connected!
 
 In this example, in the GUI, you would use `10.0.0.18` for the Local IP and `80` for the Port.
 
+## Primary commands
+
+In addition to the constructor and `cm.connect`, the following sections describe some other important commands to know.
+
 ### Adding modules
 
 To add controls and reporters, use the `CommManager` routines described below.
@@ -253,7 +259,7 @@ There are two optional parameters for plots.
 
 The first changes the number of ticks displayed (default `10`).
 
-The second changes how many data points to send up per report (default `1`). This is useful if you would like to record at a high frequency, while at the same time, to send up a report less occasionally. The recorded data points are as evenly spaced out as the step period permits. This parameter cannot be greater than the ratio of the report period to the step period.
+The second, `burst`, changes how many data points to send up per report (default `1`). This is useful if you would like to record at a high frequency, while at the same time, to send up a report less occasionally. The recorded data points are as evenly spaced out as the step period permits. This parameter must not be greater than the `MAX_BURST` defined for the device.
 
 <!-- (There is a third parameter under development(maybe)) -->
 
@@ -275,7 +281,9 @@ cm.addNumber(&t, "Temperature");
 
 There is one optional parameter that controls how many data points are recorded per report period, identical to the corresponding optional parameter described above for [plots](#plots) (default `1`).
 
-### `cm.step`
+<a id="cmstep"></a>
+
+### `cm.step`: Loop control
 
 `cm.step` updates the inputs, reports the outputs, and conveniently blocks according to your given loop rate (e.g. the 5000 microseconds from [above](#example)).
 
@@ -285,6 +293,25 @@ void loop() {
    cm.step();
 }
 ```
+
+<a id="dual-core"></a>
+
+### `cm.pinToCore`: Dual core on the ESP32
+
+ESP32 and ESP32-S3 modules come with two cores. With 6302view, you can get the second core to handle the `cm.step` calls for you by calling `cm.pinToCore` in `setup` (*after* `cm.connect`!). This is useful if you need your microcontroller-GUI system running at as fast a rate as possible, while your main code runs on the first core.
+
+```cpp
+void setup() {
+   /* do stuff */
+   cm.pinToCore();
+}
+
+void loop() {
+   /* do stuff */
+}
+```
+
+Please note, if `cm.pinToCore` is used in this way, `cm.step` should not also be used in `loop` on the first core.
 
 ## How the information is communicated
 
@@ -342,7 +369,7 @@ Therefore, from the GUI perspective, messages coming in starting with `\fR` will
 
 #### How debug messages are sent
 
-When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Debug messages start with `\fD`, then with four bytes representing the lowest headroom over the last report period as a `float`, follows with the user's actual message, and terminates by `\n`. Multiple lines in one debug message are separated by `\r`. The debug string is sent once per report period.
+When using a serial communication setup, the intended way to write debug messages is with `cm.debug`. Debug messages start with `\fD`, then with four bytes representing the lowest headroom encountered over the last report period as a `float`, follows with the user's actual message, and terminates by `\n`. Multiple lines in one debug message are separated by `\r`. The debug string is sent once per report period.
 
 (Currently only `char` arrays and `String`s are supported.)
 
@@ -361,15 +388,17 @@ When using a serial communication setup, the intended way to write debug message
 | Arduino Uno     | 5              | 5               | 5           | 500             | 20              |
 | Teensy          | 20             | 10              | 10          | 1000            | 30              |
 | ESP8266         | 20             | 10              | 10          | 1000            | 30              |
-| ESP32           | 20             | 10              | 10          | 1000            | 30              |
+| ESP32           | 20             | 10              | 100         | 1000            | 30              |
 
 Attempting to add more controls or reporters when the respective maximum is met will not add more.
 
-`MAX_BURST` sets the maximum number of data recordings, per reporter, per report period. See [#Plots](#plots) for more details.
+`MAX_BURST` sets the maximum number of data recordings to send, per reporter, per report period, to the GUI server. See [#Plots](#plots) for more details. For example, an Arduino Uno with an `int` reporter will record up to `5` values before it is time to report to the GUI. For this reason, it's a good rule of thumb to keep your device's report period close to `MAX_BURST` times the step period. These details are especially important when recording CSVs, where you'd probably need stable, even readings. <!--`MAX_BURST` is an 8-bit unsigned intger.-->
 
 `MAX_DEBUG_LEN` sets the maximum amount of characters you are able to send per report period using the `debug` routine. If your debug messages are being cut off, either shorten your messages, send less of them per report period, or increase this constant.
 
 `MAX_TITLE_LEN` sets the maximum length of titles. Long titles are truncated in the [build string](#how-build-instructions-are-sent).
+
+Please note that you can modify the library file (`Six302.h`) to experiment/suit your needs.
 
 ### Arduino Uno
 
@@ -389,6 +418,9 @@ The ESP8266 is practically the same as the Teensy, except it supports communicat
 
 ### ESP32
 
-Because the ESP32 has a second core, it is desirable to run the `CommManager` over there, rather than on the primary core, to open up headroom. `cm.step` in your `loop` routine will still work; however, it's only sugar offering timing control. `cm.headroom()` returns the headroom for your `loop` routine because it is likely to be more useful than the headroom for the task running on the second core, which is generally constant around six microseconds off of the step period.
+Because the ESP32 has a second core, it is desirable to run the `CommManager` over there, rather than on the primary core, to open up headroom. And since the ESP32 has a decent amount of dynamic memory, `MAX_BURST` is defined at a respectable 100. In my testing, without other code running on the second core, an ESP32-S3 can run 20 kHz just fine with 30 μs of headroom with a configuration of `CommManager(50, 5000)`.
 
 The ESP32 also supports communication over WebSockets, like the ESP8266.
+
+
+

@@ -43,7 +43,7 @@ function Numerical_Reporter(unique,title,data_type,color=null,bg_color=null){
         }else if (range[0] != null && value[0][0] <range[0]){
             value[0][0]= range[0];
         }
-        console.log(value[0][0]);
+        // console.log(value[0][0]);
         reported.innerHTML = format(value[0][0])
     };
 };

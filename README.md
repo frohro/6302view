@@ -10,7 +10,7 @@ Our goal of this project is to make it elegant -- just include the library and g
 
 * [Teensy 3.2](https://www.pjrc.com/teensy/)
 * [ESP8266](https://en.wikipedia.org/wiki/ESP8266)
-* [ESP32](https://www.espressif.com/en/products/hardware/esp32/overview)
+* [ESP32](https://www.espressif.com/en/products/socs/) (including C and S series)
 * [Arduino Uno](https://www.arduino.cc/en/guide/BoardAnatomy)
 
 ## Quick example
@@ -78,4 +78,15 @@ Go to `Manage libraries...` and search for `WebSockets`. It's [the one at the bo
 
 ## Documentation
 
-[Documentation is in `docs.md`.](https://github.com/almonds0166/6302view/blob/master/docs.md)
+[Documentation is in `docs.md`!](https://github.com/almonds0166/6302view/blob/master/docs.md)
+
+<!--
+## To-do
+
+To-do possibilities:
+
+* incorporate `cm.debug` into GUI
+* refine how cm.step interacts with cm.pinToCore?
+* support more MCUs maybe
+-->
+

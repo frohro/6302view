@@ -54,14 +54,6 @@ void CommManager::connect(char* ssid, char* pw) {
 #endif
 #ifdef ESP32
    _baton = xSemaphoreCreateMutex();
-   disableCore0WDT();
-   xTaskCreatePinnedToCore( _walk,
-                            "6302view",
-                            4096, /* Stack size, in words, can probably be decreased */
-                            this,
-                            0,
-                            &_six302_task,
-                            0 );
 #endif
    // Initialize timers
 #ifdef TEENSYDUINO
@@ -72,7 +64,24 @@ void CommManager::connect(char* ssid, char* pw) {
 #ifdef ESP32
    _secondary_timer = micros();
 #endif
+   _ready = true;
 }
+
+/* :: pinToCore( coreID ) */
+
+#if defined ESP32
+void CommManager::pinToCore(uint8_t xCoreID) {
+   if( !_ready ) return;
+   xTaskCreatePinnedToCore( _walk,
+                            "6302view",
+                            4096, /* Stack size, in bytes, can probably be decreased */
+                            this,
+                            1,
+                            &_six302_task,
+                            xCoreID );
+   //vTaskDelay(50);
+}
+#endif
 
 /* To add CONTROLS */
 
@@ -290,17 +299,13 @@ bool CommManager::addNumber(int32_t* linker,
 
 /* THE MITOCHONDRIA */
 
-#if !defined ESP32
 void CommManager::step() {
-#else
-void CommManager::_step() {
-#endif
 
    if( _total_reporters ) {
 
       if( _time_to_talk(_report_period) )
          _report();
-         
+
       for( uint8_t reporter = 0; reporter < _total_reporters; reporter++ )
          _record(reporter);
 
@@ -311,6 +316,12 @@ void CommManager::_step() {
 #ifdef ESP32
 
    int32_t leftover = _step_period - (micros() - _secondary_timer);
+   _headroom = leftover > 0? leftover : 0;
+   _headroom_rp = (float)(min((int32_t)_headroom_rp, _headroom));
+   if( leftover > 1000 ) {
+      vTaskDelay(leftover / 1000);
+      leftover = leftover % 1000;
+   }
    if( leftover > 0 )
       delayMicroseconds(leftover);
    _secondary_timer = micros();
@@ -324,15 +335,15 @@ void CommManager::_step() {
 }
 
 #ifdef ESP32
-void CommManager::step() {
-   // Just sugar, offering loop control
-   _wait();
-}
-
 void CommManager::_walk(void* param) {
    CommManager* ptr = (CommManager*)param;
+   uint32_t watchdogTimer = millis();
    for(;;) {
-      ptr->_step();
+      /*if( millis() - watchdogTimer >= 4500 ) {
+         vTaskDelay(1); // feed watchdog
+         watchdogTimer = millis();
+      }*/
+      ptr->step();
    }
 }
 #endif

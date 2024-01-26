@@ -222,10 +222,13 @@ var isBldStrt = function(e,index,dataArr) {
 var isBldEnd = function(e,index,dataArr) {
     return((e == 13) && (dataArr[index+1] == 10));
 }
-
 // Find data string in Uint8Array, the "\fR" character pair.
 var isDataStrt = function(e,index,dataArr) {
     return((e == 12) && (dataArr[index+1] == 82));
+}
+// Find debug string in Uint8Array, the "\fD" character pair.
+var isDbgStrt = function(e,index,dataArr) {
+    return((e == 12) && (dataArr[index+1] == 68));
 }
 
 var tDataSave = new ArrayBuffer(4);
@@ -256,6 +259,25 @@ var MessageParser = function(evt) {
                 plot_buffer.push([])
                 }
             }
+        }
+    }
+    // If packet has a debug string, \fD, process.
+    var endInd = -1;
+    var startInd = tDataB.findIndex(isDbgStrt);
+    if(startInd >= 0) { // We've got a debug string.
+        startNext = startInd;
+        var endInd = startNext + tDataB.slice(startNext).findIndex(isBldEnd); 
+        if (endInd > startInd) { //full debug string
+            startNext = endInd;
+            var msgStart = startInd+2;
+            var msgSize = endInd - msgStart+1;
+            var msg = tDataB.slice(msgStart,msgStart+msgSize);
+            var headroomArray = msg.slice(0,4).reverse();
+            var view = new DataView(headroomArray.buffer);
+            var headroom = view.getFloat32(0).toFixed(0);
+            var debugStr = msg.slice(4);
+            var debugMsg = reshapeDelim(debugStr, 13).join("\n\t");
+            console.log(`[${headroom}]\n\t${debugMsg}`);
         }
     }
     // If packet has data strings, \fR's, find all complete ones and send.

@@ -75,6 +75,17 @@ using namespace std::placeholders;
 
          #define MAX_PREC      7
 
+#elif defined ESP32
+
+// ESP32:
+
+         #define MAX_CONTROLS  20
+         #define MAX_REPORTERS 10
+         #define MAX_BURST     100
+
+         #define MAX_TITLE_LEN 30
+         #define MAX_DEBUG_LEN 1000
+
 #else
 
 // All else:
@@ -112,6 +123,10 @@ class CommManager {
 #endif
 #elif defined S302_WEBSOCKETS
       void connect(char* ssid, char* pw);
+#endif
+
+#if defined ESP32
+      void pinToCore(uint8_t xCoreID = 0);
 #endif
 
       /* To add controls: */
@@ -217,10 +232,12 @@ class CommManager {
       
       /* Timing */
 
+      bool     _ready;
       uint32_t _step_period;
       uint32_t _report_period;
-      int32_t  _headroom;    // headroom for the last step
-      float    _headroom_rp; // lowest headroom over the last report period
+      int32_t  _headroom;                       // headroom for the last step
+      float    _headroom_rp = (float)INT32_MAX; // lowest headroom over the
+                                                // last report period
 
 #if defined TEENSYDUINO
       elapsedMicros _main_timer;
