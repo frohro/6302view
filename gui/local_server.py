@@ -363,7 +363,7 @@ class Handler:
                 print(e)
                 break
 
-    async def handler(self, websocket, path):
+    async def handler(self, websocket):
         """Handles communication between the websocket and the microcontroller
         """
         if not self.connected: self.connect_serial()
