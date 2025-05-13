@@ -54,7 +54,7 @@ VALID_MCUs: typing.List[MCU] = [
     MCU({5824}, "Teensy 3.2", "Teensy", "a Teensy"),
     MCU({10755, 9025}, "Arduino Uno (FTDI chipset)", "Arduino Uno", "an Uno"),
     MCU({6790}, "ESP8266 D1 Mini Pro (with CH340 Adapter)", "ESP8266", "an ESP8266"),
-    MCU({4292}, "ESP32 Dev Module", "ESP32", "an ESP32"),
+    MCU({4292, 12346}, "ESP32 Dev Module", "ESP32", "an ESP32"),
 ]
 
 DEVICE_LIST: str = \
