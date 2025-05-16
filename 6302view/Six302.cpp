@@ -36,7 +36,7 @@ void CommManager::connect(HardwareSerial* s, uint32_t baud)
    while( _serial->available() )
       _serial->read();
 #elif defined S302_WEBSOCKETS
-void CommManager::connect(char* ssid, char* pw) {
+void CommManager::connect(const char* ssid, const char* pw) {
    // Serial should be ready to go
    Serial.printf("Connecting to %s WiFi ", ssid);
    WiFi.begin(ssid, pw);
