@@ -40,6 +40,7 @@ void CommManager::connect(const char* ssid, const char* pw) {
    // Serial should be ready to go
    Serial.printf("Connecting to %s WiFi ", ssid);
    WiFi.begin(ssid, pw);
+   WiFi.setTxPower(WIFI_POWER_8_5dBm);  //ESP32-C3 units poor HW design demands this.
    while( WiFi.status() != WL_CONNECTED ) {
       Serial.print('.');
       delay(1000);
