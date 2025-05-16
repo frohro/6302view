@@ -6,7 +6,7 @@
 
 /* CHOOSE ONE: */
 
-#define S302_SERIAL
+//#define S302_SERIAL
 //#define S302_WEBSOCKETS
 
 /* WebSockets options */
@@ -122,7 +122,7 @@ class CommManager {
       void connect(HardwareSerial* s, uint32_t baud);
 #endif
 #elif defined S302_WEBSOCKETS
-      void connect(char* ssid, char* pw);
+      void connect(const char* ssid, const char* pw);
 #endif
 
 #if defined ESP32
