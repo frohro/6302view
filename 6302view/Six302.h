@@ -14,6 +14,10 @@
 #define S302_PORT 80
 #define S302_VERBOSE // enable this to print debug information to Serial (WebSockets)
 
+// Add ESP32-C3 specific detection
+#if defined(ARDUINO_USB_MODE) && defined(USE_ESP32C3_SERIAL)
+#include <HWCDC.h>
+#endif
 
 #if ( defined S302_SERIAL &&  defined S302_WEBSOCKETS) || \
     (!defined S302_SERIAL && !defined S302_WEBSOCKETS)
@@ -119,6 +123,8 @@ class CommManager {
 #if defined S302_SERIAL
 #if defined TEENSYDUINO
       void connect(usb_serial_class* s, uint32_t baud);
+#elif defined(ARDUINO_USB_MODE) && defined(USE_ESP32C3_SERIAL)
+      void connect(HWCDC* s, uint32_t baud);
 #else
       void connect(HardwareSerial* s, uint32_t baud);
 #endif
@@ -220,6 +226,8 @@ class CommManager {
 #if defined S302_SERIAL
 #if defined TEENSYDUINO
       usb_serial_class* _serial;
+#elif defined(ARDUINO_USB_MODE) && defined(USE_ESP32C3_SERIAL)
+      HWCDC* _serial;
 #else
       HardwareSerial* _serial;
 #endif
