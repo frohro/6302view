@@ -23,7 +23,7 @@ CommManager::CommManager(uint32_t sp, uint32_t rp) {
 #ifdef S302_SERIAL
 #ifdef TEENSYDUINO
 void CommManager::connect(usb_serial_class* s, uint32_t baud)
-#elif defined(ARDUINO_USB_MODE) && defined(USE_ESP32C3_SERIAL)
+#elif defined(ARDUINO_USB_MODE)
 void CommManager::connect(HWCDC* s, uint32_t baud)
 #else
 void CommManager::connect(HardwareSerial* s, uint32_t baud)
