@@ -55,8 +55,9 @@ VALID_MCUs: typing.List[MCU] = [
     MCU({10755, 9025}, "Arduino Uno (FTDI chipset)", "Arduino Uno", "an Uno"),
     MCU({6790}, "ESP8266 D1 Mini Pro (with CH340 Adapter)", "ESP8266", "an ESP8266"),
     MCU({4292, 12346}, "ESP32 Dev Module", "ESP32", "an ESP32"),
+    MCU({11914}, "Raspberry Pi Pico", "Raspberry Pi Pico", "a Pico"),
 ]
-
+Add
 DEVICE_LIST: str = \
     "\n".join([ f"({i}): {mcu.name}" for i, mcu in enumerate(VALID_MCUs)])
 
