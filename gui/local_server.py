@@ -57,7 +57,7 @@ VALID_MCUs: typing.List[MCU] = [
     MCU({4292, 12346}, "ESP32 Dev Module", "ESP32", "an ESP32"),
     MCU({11914}, "Raspberry Pi Pico", "Raspberry Pi Pico", "a Pico"),
 ]
-Add
+
 DEVICE_LIST: str = \
     "\n".join([ f"({i}): {mcu.name}" for i, mcu in enumerate(VALID_MCUs)])
 
