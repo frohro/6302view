@@ -24,7 +24,7 @@
 #error "Choose a communication setup"
 #endif
 
-#if defined (S302_WEBSOCKETS) && !defined (ESP32) && !defined (ESP8266)
+if defined (S302_WEBSOCKETS) && !defined (ESP32) && !defined (ESP8266) && !defined (PICO_W) && !defined (PICO_2_W) 
 #error "Communication over WebSockets is only available for the ESP32 or ESP8266."
 #endif
 
